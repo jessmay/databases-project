@@ -1,4 +1,4 @@
-<?php include '../../init.php'; ?>
+<?php include '../init.php'; ?>
 <?php include TEMPLATE_TOP; ?>
 	<title>Front Page Example</title>
 

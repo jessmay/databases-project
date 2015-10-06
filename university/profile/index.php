@@ -1,9 +1,10 @@
-<?php include 'template_top.php'; ?>
+<?php include '../../init.php'; ?>
+<?php include TEMPLATE_TOP; ?>
 	<title>Front Page Example</title>
 
-<?php include 'template_middle.php'; ?>
+<?php include TEMPLATE_MIDDLE; ?>
 	<p>
 		Hey, content!
 	</p>
 
-<?php include 'template_bottom.php'; ?>
+<?php include TEMPLATE_BOTTOM; ?>
