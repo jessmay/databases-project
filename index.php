@@ -1,6 +1,6 @@
 <?php include 'init.php'; ?>
 <?php include TEMPLATE_TOP; ?>
-	<title>Front Page Example</title>
+	<title>Database Project</title>
 
 <?php include TEMPLATE_MIDDLE; ?>
 	<div class="container col-xs-12">
@@ -18,7 +18,7 @@
 					<div class="form-group">
 						<input type="password" class="form-control" name="pass" placeholder="Password">
 					</div>
-					<button type="submit" name="login" class="btn btn-default">Log In</button>
+					<button type="submit" name="login" class="btn btn-primary">Log In</button>
 				</form>
 			</div>
 			<div class="col-xs-6">
@@ -36,7 +36,7 @@
 					<div class="form-group">
 						<input type="password" class="form-control" name="pass" placeholder="Password">
 					</div>
-					<button type="submit" name="createaccount" class="btn btn-default">Create Account</button>
+					<button type="submit" name="createaccount" class="btn btn-success">Create Account</button>
 				</form>
 			</div>
 		</div>
