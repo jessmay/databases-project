@@ -3,24 +3,43 @@
 	<title>Front Page Example</title>
 
 <?php include TEMPLATE_MIDDLE; ?>
-	<h3>
-		Hey, content!
-	</h3>
-	<p>
-		Lorem ipsum dolor sit amet
-	</p>
-	
-	<form>
-		<div class="col-lg-6">
-			<div class="input-group">
-				<input type="text" class="form-control" placeholder="Search for...">
-				<span class="input-group-btn">
-				<button class="btn btn-default" type="button">
-					<span class="glyphicon glyphicon-search" aria-hidden="true"></span>
-				</button>
-				</span>
+	<div class="container col-xs-12">
+		<h2>
+			Welcome to Database Project
+		</h2>
+		<hr>
+		<div class="row">
+			<div class="col-xs-6">
+				<h4>Log In</h4>
+				<form role="form" action="" method="post">
+					<div class="form-group">
+						<input type="email" class="form-control" name="email" placeholder="Email">
+					</div>
+					<div class="form-group">
+						<input type="password" class="form-control" name="pass" placeholder="Password">
+					</div>
+					<button type="submit" name="login" class="btn btn-default">Log In</button>
+				</form>
+			</div>
+			<div class="col-xs-6">
+				<h4>Create Account</h4>
+				<form role="form" action="" method="post">
+					<div class="form-group">
+						<input class="form-control" name="fname" placeholder="First name">
+					</div>
+					<div class="form-group">
+						<input class="form-control" name="lname" placeholder="Last name">
+					</div>
+					<div class="form-group">
+						<input type="email" class="form-control" name="email" placeholder="Email">
+					</div>
+					<div class="form-group">
+						<input type="password" class="form-control" name="pass" placeholder="Password">
+					</div>
+					<button type="submit" name="createaccount" class="btn btn-default">Create Account</button>
+				</form>
 			</div>
 		</div>
-	</form>
+	</div>
 
 <?php include TEMPLATE_BOTTOM; ?>

@@ -18,8 +18,8 @@
 				</div>
 				<div id="navbar" class="collapse navbar-collapse">
 					<ul class="nav navbar-nav">
-						<li class="active"><a href="/">Log In</a></li>
-						<li class="active"><a href="/">Sign Up</a></li>
+						<li><a href="/">Home</a></li>
+						<li><a href="/">Log Out</a></li>
 					</ul>
 				</div>
 			</div>
