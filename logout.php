@@ -1,6 +1,7 @@
 <?php
+include 'init.php';
 
-if (isset($_SESSION['user']) {
+if (isset($_SESSION['user'])) {
     $params = session_get_cookie_params();
     setcookie(
         session_name(),
