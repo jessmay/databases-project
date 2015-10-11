@@ -10,26 +10,32 @@ CREATE TABLE IF NOT EXISTS RSO (
 
 CREATE TABLE IF NOT EXISTS  University (
     University_id INTEGER NOT NULL AUTO_INCREMENT,
-    SuperAdmin_id INTEGER NOT NULL,
+    SuperAdmin_id INTEGER NOT NULL DEFAULT 1,
     Name          CHAR(50),
     Description   CHAR(160),
-    Student_count INTEGER,
+    Student_count INTEGER NOT NULL DEFAULT 0,
     PRIMARY KEY (University_id),
     FOREIGN KEY (SuperAdmin_id) REFERENCES User (User_id)
 );
 
+INSERT INTO University (University_id, Name) 
+       VALUES (1, 'Default University');
+
 CREATE TABLE IF NOT EXISTS User (
     User_id       INTEGER NOT NULL AUTO_INCREMENT,
     Email         CHAR(50),
-    University_id INTEGER NOT NULL,
+    University_id INTEGER NOT NULL DEFAULT 1,
     First_name    CHAR(50),
     Last_name     CHAR(50),
     Password_hash CHAR(255),
-    Type          CHAR(10),
+    Type          INTEGER NOT NULL DEFAULT 1,
     PRIMARY KEY (User_id),
     FOREIGN KEY (University_id) REFERENCES University (University_id),
     UNIQUE      (Email)
 );
+
+INSERT INTO User (User_id, University_id, First_name, Last_name) 
+       VALUES (1, 1, 'Bobby', 'Tables');
 
 CREATE TABLE IF NOT EXISTS Picture (
     Picture_id INTEGER NOT NULL AUTO_INCREMENT,

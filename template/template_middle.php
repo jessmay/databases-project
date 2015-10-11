@@ -18,9 +18,13 @@
 					</a>
 				</div>
 				<div id="navbar" class="collapse navbar-collapse">
-					<ul class="nav navbar-nav">
-						<li><a href="/">Home</a></li>
-						<li><a href="/">Log Out</a></li>
+                    <ul class="nav navbar-nav">
+                        <li><a href="/">Home</a></li>
+                        <?php if ($logged_in): ?>
+						<li><a href="/logout.php">Log Out</a></li>
+                        <?php else: ?>
+                        <li><a href="/">Log In</a></li>
+                        <?php endif; ?>
 					</ul>
 				</div>
 			</div>
