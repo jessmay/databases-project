@@ -10,8 +10,6 @@
 		FROM Event E
 		WHERE E.Event_id = :id
 	';
-	// Standardize email
-	$email = strtolower($email);
 
 	$event_params = array(':id' => $event_id);
 	$result = $db->prepare($event_name_query);
@@ -20,13 +18,33 @@
 	
 	$event_name = $row['Name'];
 	$event_date_time = $row['Date_time'];
-	$event_location = "Orlando";
+	
+	$location_query = '
+		SELECT L.Name
+		FROM location L, event_location EL
+		WHERE EL.Event_id = :id AND EL.Location_id = L.Location_id
+	';
+	$location_result = $db->prepare($location_query);
+	$location_result->execute($event_params);
+	$location_row = $location_result->fetch();
+	$event_location = $location_row['Name'];
 
 	echo "<h2>$event_name</h2>
 	<h4>$event_date_time, $event_location</h4>
 	<hr>";
 	
-	$event_category = $row['Category_id'];
+	$cat_id = $row['Category_id'];
+	$category_query = '
+		SELECT C.Name
+		FROM category C
+		WHERE C.Category_id = :cat_id
+	';
+	$category_params = array(':cat_id' => $cat_id);
+	$category_result = $db->prepare($category_query);
+	$category_result->execute($category_params);
+	$category_row = $category_result->fetch();
+	$event_category = $category_row['Name'];
+	
 	echo "<h4>Category</h4>
 	<p>$event_category</p>
 	<br>";
