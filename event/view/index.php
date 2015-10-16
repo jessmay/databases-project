@@ -2,26 +2,49 @@
 <?php include TEMPLATE_TOP; ?>
 	<title>Event View Page</title>
 
-<?php include TEMPLATE_MIDDLE; ?>
-	<h2>EVENT NAME HERE</h2>
-    <h4>DateTime, Location</h4>
-    <hr>
-	<h4>Category</h4>
-	<p>Awesome</p>
-	<br>
-	<h4>Event Description</h4>
-	<p>
-		Lorem ipsum dolor sit amet, vero probo illum qui ad, ad mutat congue mei. Cum ei natum malis deserunt. Ei mea vide alienum partiendo. Sea ex justo numquam, vide fastidii insolens usu ad, erat molestiae constituam quo te.
-		Eu sit vidisse aperiam. Et per dicta harum melius, eos bonorum vocibus denique et. Te facer sonet postulant usu. No eos habeo labitur. Cum justo soluta te, sed ut error oportere mediocrem.
-		Id cum illud congue erroribus, audire dissentiet vel id. Mucius latine mandamus qui no, est erat noster accommodare at. Sale iracundia eum et, his ut nostrum adversarium mediocritatem. Mei ipsum fabulas cotidieque id.		
-	</p>
-	<br>
-	<h4>Contact Information</h4>
-	<p>
-		Phone:	(123)456-7890 <br>
-		Email:	contact@contact.com
-	</p>
-	<br>
-	<button type="submit" class="btn btn-primary">Join Event</button>
+<?php include TEMPLATE_MIDDLE; 
+	$event_id = 2;
 
+	$event_name_query = '
+		SELECT *
+		FROM Event E
+		WHERE E.Event_id = :id
+	';
+	// Standardize email
+	$email = strtolower($email);
+
+	$event_params = array(':id' => $event_id);
+	$result = $db->prepare($event_name_query);
+	$result->execute($event_params);
+	$row = $result->fetch();
+	
+	$event_name = $row['Name'];
+	$event_date_time = $row['Date_time'];
+	$event_location = "Orlando";
+
+	echo "<h2>$event_name</h2>
+	<h4>$event_date_time, $event_location</h4>
+	<hr>";
+	
+	$event_category = $row['Category_id'];
+	echo "<h4>Category</h4>
+	<p>$event_category</p>
+	<br>";
+	
+	$event_description = $row['Description'];
+	echo "<h4>Event Description</h4>
+	<p>$event_description</p>
+	<br>";
+	
+	$event_phone = $row['Contact_phone'];
+	$event_email = $row['Contact_email'];
+	echo "<h4>Contact Information</h4>
+	<p>Phone:	$event_phone</p>
+	<p>Email:	$event_email</p>
+	<br>";
+	
+?>
+	
+<button type="submit" class="btn btn-primary">Join Event</button>
+	
 <?php include TEMPLATE_BOTTOM; ?>
