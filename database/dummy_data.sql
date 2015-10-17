@@ -6,7 +6,7 @@ INSERT INTO University VALUES(4, 6, 'Backup College', 'You should have started a
 INSERT INTO University VALUES(5, 11, 'Community College', 'Get that AA before college.', 1000);
 INSERT INTO University VALUES(6, 9, 'Smart School', 'Only the smartest of students attend.', 5);
 
-INSERT INTO User VALUES(2, 'bob@example.com', 2, 'Robert', 'Example',
+INSERT INTO User VALUES(2, 'bob@example.com', 3, 'Robert', 'Example',
 '$2y$10$oN3BkMddhlkBaa7jOQmFduubpOJgXoq3.kLpXy15ve/1PX3jk1sTu', 1);
 INSERT INTO User VALUES(3, 'bernard@knights.ucf.edu', 2, 'Bernard', 'Bernard',
 '$2y$10$C0bvDBzLjqsxv4uxebT7dehrCYZjxNdBbRA4Z8RTDhrA2NUu0FN8K', 1);
