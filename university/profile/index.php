@@ -3,6 +3,9 @@
 	<title>University Profile</title>
 
 <?php include TEMPLATE_MIDDLE; 
+	// TODO Make join button work
+	// Show pictures
+
 	$university_id = 2;
 	
 	$university_query = '

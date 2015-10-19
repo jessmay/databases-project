@@ -74,7 +74,7 @@
 	echo "<h4>Number of Members</h4>
 	<p>$member_count</p>
 	<br>";
-
+	
 ?>
 	
 	<button type="submit" class="btn btn-primary">Join RSO</button>
