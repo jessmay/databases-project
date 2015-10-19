@@ -3,6 +3,8 @@
 	<title>RSO Profile Page</title>
 
 <?php include TEMPLATE_MIDDLE; 
+	// TODO Pass $rso_id into this page from rso search link
+
 	$rso_id = 2;
 	
 	$rso_query = '
@@ -69,9 +71,9 @@
 	
 	$member_count = $member_row['Member_count'];
 	
-	echo '<h4>Number of Members</h4>
+	echo "<h4>Number of Members</h4>
 	<p>$member_count</p>
-	<br>';
+	<br>";
 
 ?>
 	

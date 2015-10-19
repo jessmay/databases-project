@@ -2,17 +2,28 @@
 <?php include TEMPLATE_TOP; ?>
 	<title>Event View Page</title>
 
-<?php include TEMPLATE_MIDDLE; 
+<?php include TEMPLATE_MIDDLE;
+	// TODO verify user has permission to view this event
+	// have university id passed into page
+	//create error if event does not exist
+	// verify event is approved
+	// RSO association with RSO event
+	// Add event to user events if button is clicked
+	// Verify user has no conflicts when signing up for event
+	// comments
+	// ratings
+	// facebook sharing
+ 
 	$event_id = 2;
 
-	$event_name_query = '
+	$event_query = '
 		SELECT *
 		FROM Event E
 		WHERE E.Event_id = :id
 	';
 
 	$event_params = array(':id' => $event_id);
-	$result = $db->prepare($event_name_query);
+	$result = $db->prepare($event_query);
 	$result->execute($event_params);
 	$row = $result->fetch();
 	
