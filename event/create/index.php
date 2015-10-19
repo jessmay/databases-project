@@ -109,15 +109,6 @@
 				<div class="col-md-2">
 					<input type="radio" name="eventTypes" id="eventTypes3" value="type3"> RSO
 				</div>
-                <div class="col-md-3">
-                    If not RSO, approved?
-                </div>
-                <div class="col-md-1">			
-					<input type="radio" name="eventApprove" id="eventApprove1" value="yes"> Yes
-				</div>
-				<div class="col-md-1">
-					<input type="radio" name="eventApprove" id="eventApprove2" value="no" checked="checked"> No
-				</div>
 			</div><br>
 						
 			<div class="row">

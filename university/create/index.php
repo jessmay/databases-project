@@ -5,22 +5,24 @@
 <?php include TEMPLATE_MIDDLE;
     $name_taken = false;
 
-    function tryCreateUniversity ($db, $university_name, $student_count, $description) {
+    function tryCreateUniversity ($db, $name, $student_count, $description, $picture_url) {
         // Check to see if there is a existing university with that name
-        $university_name = strtolower($university_name);
-        $university_name_used_params = array(':university_name' => $university_name);
-        $university_name_used_query = '
-            SELECT COUNT(*) FROM University U
-            WHERE U.Name = :university_name
+        $name = strtolower($name);
+        $name_used_params = array(':name' => $name);
+        $name_used_query = '
+            SELECT COUNT(*)
+            FROM University U
+            WHERE U.Name = :name
         ';
-        $result = $db->prepare($university_name_used_query);
-        $result->execute($university_name_used_params);
+        $result = $db->prepare($name_used_query);
+        $result->execute($name_used_params);
         $name_taken = $result->fetchColumn();
         if ($name_taken)
             return false;
         
+        // Insert the university information into the University table
         $create_university_params = array(
-            ':university_name' => $university_name,
+            ':name' => $name,
             ':student_count' => $student_count,
             ':description' => $description
         );
@@ -30,7 +32,7 @@
                 Student_count,
                 Description
             ) VALUES (
-                :university_name,
+                :name,
                 :student_count,
                 :description
             )
@@ -39,6 +41,69 @@
         $result = $db
             ->prepare($create_university_query)
             ->execute($create_university_params);
+        
+        // Insert the picture url into the Picture table
+        $create_picture_params = array(
+            ':picture_url' => $picture_url
+        );
+        $create_picture_query = '
+            INSERT INTO Picture (
+                Url
+            ) VALUES (
+                :picture_url
+            )
+        ';
+        
+        $result = $db
+            ->prepare($create_picture_query)
+            ->execute($create_picture_params);
+        
+        // Find the university_id from the University table
+        $find_university_params = array(
+            ':name' => $name
+        );
+        $find_university_query = '
+            SELECT University_id
+            FROM University U
+            WHERE U.Name = :name
+        ';
+        
+        $result = $db->prepare($find_university_query);
+        $result->execute($find_university_params);
+        $university_id = $result->fetch()['University_id'];
+        
+        // Find the picture_id from the Picture table
+        $find_picture_params = array(
+            ':picture_url' => $picture_url
+        );
+        $find_picture_query = '
+            SELECT Picture_id
+            FROM Picture P
+            WHERE P.Url = :picture_url
+        ';
+        
+        $result = $db->prepare($find_picture_query);
+        $result->execute($find_picture_params);
+        $picture_id = $result->fetch()['Picture_id'];
+        
+        // Insert the relation into the University_Picture table
+        $create_picture_relation_params = array(
+            ':university_id' => $university_id,
+            ':picture_id' => $picture_id
+        );
+        $create_picture_relation_query = '
+            INSERT INTO University_Picture (
+                University_id,
+                Picture_id
+            ) VALUES (
+                :university_id,
+                :picture_id
+            )
+        ';
+        
+        $result = $db
+            ->prepare($create_picture_relation_query)
+            ->execute($create_picture_relation_params);
         return true;
     }
     
@@ -47,9 +112,10 @@
         if (isset($_POST['createUniversity'])) {
             $success = tryCreateUniversity(
                 $db,
-                $_POST['university_name'],
+                $_POST['name'],
                 $_POST['student_count'],
-                $_POST['description']
+                $_POST['description'],
+                $_POST['picture_url']
             );
             $name_taken = !$success;
             if ($success) {
@@ -63,17 +129,18 @@
     </h2>
     <hr>
     <?php
-        $university_name = $name_taken ? htmlentities($_POST['university_name']) : '';
+        $name = $name_taken ? htmlentities($_POST['name']) : '';
         $student_count = $name_taken ? htmlentities($_POST['student_count']) : '';
         $description = $name_taken ? htmlentities($_POST['description']) : '';
+        $picture_url = $name_taken ? htmlentities($_POST['picture_url']) : '';
     ?>
 	<p>
 		<form role="form" action"" method="post">
         	<div class="row">
 				<div class="col-md-6">
 					<div class="form-group">
-						<label class="control-label" for="university_name">Name</label>
-                        <input type="text" class="form-control" id="university_name" name="university_name" placeholder="ex: University of Central Florida (UCF)" pattern="[A-Za-z]+" size="50" maxlength="50" required value="<?=$university_name?>">
+						<label class="control-label" for="name">Name</label>
+                        <input type="text" class="form-control" id="name" name="name" placeholder="ex: University of Central Florida (UCF)" pattern="[A-Za-z]+" size="50" maxlength="50" required value="<?=$name?>">
                     </div>
 				</div>
 				<div class="col-md-6">
@@ -95,8 +162,8 @@
 			</div>
             
             <div class="form-group">
-				<label for="univPicture">Picture</label>
-				<input type="url" class="form-control" id="univPicture" placeholder="ex: https://pbs.twimg.com/profile_images/462235833274073088/2Mo_aqES.png" size="200" maxlength="200" required>
+				<label for="picture_url">Picture</label>
+				<input type="url" class="form-control" id="picture_url" name="picture_url" placeholder="ex: https://ucf.edu/logo.png" size="200" maxlength="200" required value="<?=$picture_url?>">
 			</div><br>
             
 			<button type="submit" name="createUniversity" class="btn btn-primary">Submit</button>
