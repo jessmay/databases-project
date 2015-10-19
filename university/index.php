@@ -19,18 +19,22 @@
 
 <?php
     if(isset($_POST['search'])){
+        $search = $_POST['search'];
+        $Name = '%'.$search.'%';
+        $search_string = htmlentities($search);
 
-        $searchq = $_POST['search'];
-        $sql = "SELECT * 
+        $search_query = "SELECT * 
                 FROM University U
-                WHERE U.Name like '%$searchq%'";
+                WHERE U.Name like :name";
 
-        $STH = $db->query($sql);
-        $STH->setFetchMode(PDO::FETCH_ASSOC);
-        $number = $STH->rowCount();
-        echo "<h3><strong>$number result(s) found seaching for '$searchq'. </strong></h3><br>";
+        $rso_params = array(':name' => $Name);
+        $result = $db->prepare($search_query);
+        $result->execute($rso_params);
+        $number = $result->rowCount();
+        
+        echo "<h3><strong>$number result(s) found seaching for '$search_string'. </strong></h3><hr><br>";
 
-        while($row = $STH->fetch()) {
+        while($row = $result->fetch()){
             $Name =$row['Name'];
             echo "<h3><strong>$Name</strong></h3><hr>";
         }
