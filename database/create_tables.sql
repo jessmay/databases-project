@@ -8,14 +8,15 @@ CREATE TABLE IF NOT EXISTS RSO (
     FOREIGN KEY (Admin_id) REFERENCES User (User_id)
 );
 
-CREATE TABLE IF NOT EXISTS  University (
+CREATE TABLE IF NOT EXISTS University (
     University_id INTEGER NOT NULL AUTO_INCREMENT,
     SuperAdmin_id INTEGER NOT NULL DEFAULT 1,
     Name          CHAR(50),
     Description   CHAR(160),
     Student_count INTEGER NOT NULL DEFAULT 0,
     PRIMARY KEY (University_id),
-    FOREIGN KEY (SuperAdmin_id) REFERENCES User (User_id)
+    FOREIGN KEY (SuperAdmin_id) REFERENCES User (User_id),
+    UNIQUE      (Name)
 );
 
 INSERT INTO University (University_id, Name) 
