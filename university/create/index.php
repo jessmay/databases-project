@@ -3,6 +3,7 @@
 	<title>Create University</title>
 
 <?php include TEMPLATE_MIDDLE;
+    $success = false;
     $name_taken = false;
 
     function tryCreateUniversity ($db, $name, $student_count, $description, $picture_url) {
@@ -118,12 +119,11 @@
                 $_POST['picture_url']
             );
             $name_taken = !$success;
-            if ($success) {
-            } else {
-            }
         }
     }
 ?>
+
+    <?php if (!$success): ?>
     <h2>
         Create University
     </h2>
@@ -138,10 +138,18 @@
 		<form role="form" action"" method="post">
         	<div class="row">
 				<div class="col-md-6">
+                    <?php if ($name_taken): ?>
+					<div class="form-group has-error">
+						<label class="control-label" for="name">Name</label>
+                        <input type="text" class="form-control" id="name" name="name" placeholder="ex: University of Central Florida (UCF)" pattern="[A-Za-z]+" size="50" maxlength="50" required value="<?=$name?>">
+                        <span id="invalidName" class="help-block">This university has already been created.</span>
+                    </div>
+                    <?php else: ?>
 					<div class="form-group">
 						<label class="control-label" for="name">Name</label>
                         <input type="text" class="form-control" id="name" name="name" placeholder="ex: University of Central Florida (UCF)" pattern="[A-Za-z]+" size="50" maxlength="50" required value="<?=$name?>">
                     </div>
+                    <?php endif; ?>
 				</div>
 				<div class="col-md-6">
 					<div class="form-group">
@@ -153,7 +161,7 @@
 			
             <div class="form-group">
 				<label for="description">Description</label>
-				<textarea class="form-control" id="description" name="description" rows="3" placeholder="Add more info" size="160" maxlength="160" required value="<?=$description?>"></textarea>
+				<textarea class="form-control" id="description" name="description" rows="3" placeholder="Add more info" size="160" maxlength="160" required><?=$description?></textarea>
 			</div>
             
             <div class="form-group">
@@ -169,5 +177,17 @@
 			<button type="submit" name="createUniversity" class="btn btn-primary">Submit</button>
         </form>
 	</p>
+    <?php else: ?>
+    <h2>
+        Submitted Form
+    </h2>
+    <hr>
+    <p>
+        The university has been created.
+    </p>
+    <p>
+		<a href="create/index.php">Return to Form</a>
+	</p>
+    <?php endif; ?>
 
 <?php include TEMPLATE_BOTTOM; ?>
