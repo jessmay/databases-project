@@ -135,13 +135,13 @@
         $picture_url = $name_taken ? htmlentities($_POST['picture_url']) : '';
     ?>
 	<p>
-		<form role="form" action"" method="post">
+		<form role="form" action="" method="post">
         	<div class="row">
 				<div class="col-md-6">
                     <?php if ($name_taken): ?>
 					<div class="form-group has-error">
 						<label class="control-label" for="name">Name</label>
-                        <input type="text" class="form-control" id="name" name="name" placeholder="ex: University of Central Florida (UCF)" pattern="[A-Za-z]+" size="50" maxlength="50" required value="<?=$name?>">
+                        <input type="text" class="form-control" id="name" name="name" placeholder="ex: University of Central Florida (UCF)" pattern="[A-Za-z ]+" size="50" maxlength="50" required value="<?=$name?>">
                         <span id="invalidName" class="help-block">This university has already been created.</span>
                     </div>
                     <?php else: ?>
