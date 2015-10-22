@@ -50,16 +50,24 @@
     $success = false;
     $conflict = false;
     
-    function tryCreateEvent ($db, $name, $category_id, $description, $event_type, $contact_email, $contact_phone) {
-        $user_id = $_SESSION['user']['User_id'];
+    function tryCreateEvent ($db, $name, $category_id, $description, $event_date, $event_time, $event_type, $contact_email, $contact_phone) {
+        $admin_id = $_SESSION['user']['User_id'];   // Only Admins can see the Event Form
         $approved = 0;
+        
+        list($month, $day, $year) = explode('/', $event_date);
+        list($hour, $dayType) = explode(' ', $event_time);
+        $hour = ($hour != 12 && $dayType == "PM") ? $hour + 12 : $hour;
+        $date_time = $year . '-' . $month . '-' . $day . ' ' . $hour . ':00:00';
+        
+        // TODO: Check to see if there is an existing event with the same date, time, and place
     
         // Insert the event information into the Event table
         $create_event_params = array(
-            ':user_id' => $user_id,
+            ':admin_id' => $admin_id,
             ':name' => $name,
             ':category_id' => $category_id,
             ':description' => $description,
+            ':date_time' => $date_time,
             ':event_type' => $event_type,
             ':contact_email' => $contact_email,
             ':contact_phone' => $contact_phone,
@@ -71,15 +79,17 @@
                 Name,
                 Category_id,
                 Description,
+                Date_time,
                 Type,
                 Contact_email,
                 Contact_phone,
                 Approved
             ) VALUES (
-                :user_id,
+                :admin_id,
                 :name,
                 :category_id,
                 :description,
+                :date_time,
                 :event_type,
                 :contact_email,
                 :contact_phone,
@@ -101,14 +111,18 @@
                 $_POST['name'],
                 $_POST['category_id'],
                 $_POST['description'],
+                $_POST['event_date'],
+                $_POST['event_time'],
                 $_POST['event_type'],
                 $_POST['contact_email'],
                 $_POST['contact_phone']
             );
+            $conflict = !$success;
         }
     }
 ?>
 
+    <?php if (!$success): ?>
     <h2>
         Create Event
     </h2>
@@ -117,6 +131,8 @@
         $name = $conflict ? htmlentities($_POST['name']) : '';
         $category_id = $conflict ? htmlentities($_POST['category_id']) : '';
         $description = $conflict ? htmlentities($_POST['description']) : '';
+        $event_date = $conflict ? htmlentities($_POST['event_date']) : '';
+        $event_time = $conflict ? htmlentities($_POST['event_time']) : '';
         $event_type = $conflict ? htmlentities($_POST['event_type']) : '';
         $contact_email = $conflict ? htmlentities($_POST['contact_email']) : '';
         $contact_phone = $conflict ? htmlentities($_POST['contact_phone']) : '';
@@ -164,13 +180,13 @@
 			
 			<div class="row">
 				<div class="col-md-4 form-group">
-					<label for="eventDate">Date</label>
-					<input type="text" class="form-control" id="datepicker" pattern="[0-1][0-9]/[0-3][1-9]/20[0-9][0-9]" required>
+					<label for="event_date">Date</label>
+					<input type="text" class="form-control" id="datepicker" name="event_date" pattern="[0-1][0-9]/[0-3][0-9]/20[0-9][0-9]" required value="<?=$event_date?>">
 				</div>
 				<div class="col-md-2"></div>
 				<div class="col-md-4 form-group">
-					<label for="eventTime">Time</label>
-					<input type="text" id="timespinner" name="timespinner" value="12 PM" pattern="(1|2|3|4|5|6|7|8|9|10|11|12) (PM|AM)" required>
+					<label for="event_time">Time</label>
+					<input type="text" id="timespinner" name="event_time" value="12 PM" pattern="(1|2|3|4|5|6|7|8|9|10|11|12) (PM|AM)" required value="<?=$event_time?>">
 				</div>
 			</div>
 			
@@ -203,5 +219,17 @@
 			<button type="submit" name="createEvent" class="btn btn-primary">Submit</button>
 		</form>
 	</p>
+    <?php else: ?>
+    <h2>
+        Submitted Form
+    </h2>
+    <hr>
+    <p>
+        The event has been created.
+    </p>
+    <p>
+        <a href="/event/create">Return to Form</a>
+    </p>
+    <?php endif; ?>
 
 <?php include TEMPLATE_BOTTOM; ?>
