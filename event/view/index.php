@@ -4,15 +4,23 @@
 
 <?php include TEMPLATE_MIDDLE;
 	// TODO verify user has permission to view this event
-	// have university id passed into page
+	// have event id passed into page
 	// RSO association with RSO event
-	// Add event to user events if button is clicked
+	// Check that user is not already member of event when join event button is clicked
 	// Verify user has no conflicts when signing up for event
-	// comments - view done, need to be able to add
-	// ratings
+	// comments - bugs: wrong timestamp, double posting
+	// ratings - view average, view yours if exists, add yours if yours does not exist
 	// facebook sharing
- 
+	
+	$user = $_SESSION['user'];
+	$user_id =$user['User_id'];
 	$event_id = 2;
+	
+	$join_event_success=false;
+	$create_comment_success=false;
+	$create_rating_success=false;
+	$message="";
+	$rating=null;
 
 	$event_query = '
 		SELECT *
@@ -68,7 +76,7 @@
 	echo "<h4>Contact Information</h4>
 	<p>Phone:	$event_phone</p>
 	<p>Email:	$event_email</p>
-	<br>";
+	<hr>";
 	
 	
 	$comment_query = '
@@ -104,24 +112,170 @@
 		echo "<h5><strong>$user_first_name $user_last_name:</strong>$comment</h5><h6>$time</h6><hr>";
 	}
 	
+	function tryCreateRating($db, $current_user_id, $event_id, $rating){	
+		$create_rating_params = array(
+			':user_id' => $current_user_id,
+			':event_id' => $event_id,
+			':rating' => $rating
+		);
+		$create_rating_query = '
+			INSERT INTO Rating (
+				User_id,
+				Event_id,
+				Rating
+			) VALUES (
+				:user_id,
+				:event_id,
+				:rating
+			)
+		';
+		
+		$rating_result = $db
+            ->prepare($create_rating_query)
+            ->execute($create_rating_params);
+			
+		return true;
+	}
+	
+	function tryPostComment($db, $current_user_id, $event_id, $message){
+
+		$date = getdate();
+		$date = str_replace("/","-",$date);
+		$sql_date = date('Y-m-d', strtotime($date));
+	
+		$create_comment_params = array(
+			':user_id' => $current_user_id,
+			':event_id' => $event_id,
+			':date' => $sql_date,
+			':message' => $message
+		);
+		$create_comment_query = '
+			INSERT INTO Comment (
+				User_id,
+				Event_id,
+				Date,
+				Message
+			) VALUES (
+				:user_id,
+				:event_id,
+				:date,
+				:message
+			)
+		';
+		
+		$comment_result = $db
+            ->prepare($create_comment_query)
+            ->execute($create_comment_params);
+			
+		return true;
+	}
+	
+	function tryJoinEvent($db, $event_id, $user_id){
+
+		$join_event_params = array(
+			':user_id' => $user_id,
+			':event_id' => $event_id
+		);
+		$user_previously_joined_query = '
+			SELECT COUNT(*) AS user_joined
+			FROM Event_user E
+			WHERE E.Event_id = :event_id AND E.User_id = :user_id
+		';
+		$join_event_query = '
+			INSERT INTO Event_user (
+				Event_id,
+				User_id
+			) VALUES (
+				:event_id,
+				:user_id
+			)
+		';
+		
+		$user_previously_joined_result = $db->prepare($user_previously_joined_query);
+		$user_previously_joined_result->execute($join_event_params);
+		$user_joined_row = $user_previously_joined_result->fetch();
+		$user_joined = $user_joined_row['user_joined'];
+		
+		if(!$user_joined){
+			$join_event_result = $db
+			->prepare($join_event_query)
+			->execute($join_event_params);
+			
+			return true;
+		}
+		else {
+			return false;
+		}
+		
+	}
+	
+	if($_SERVER['REQUEST_METHOD'] == 'POST') {
+		if(isset($_POST['joinEvent'])) {
+			$join_event_success = tryJoinEvent(
+				$db,
+				$event_id,
+				$user_id
+			);
+		}
+		elseif(isset($_POST['createComment'])) {
+            $create_comment_success = tryPostComment(
+                $db,
+                $user_id,
+				$event_id,
+                $_POST['message']
+            );
+        }
+		elseif(isset($_POST['createRating'])) {
+			$create_rating_success = tryCreateRating(
+				$db,
+				$user_id,
+				$event_id,
+				$_POST['rating']
+			);
+		}
+	}
+	
 ?>
 
+<?php
+	$rating = $rating ? htmlentities($_POST['rating']) : '';
+?>
 <p>
-	<form>
+	<form role="form" action"" method="post">
 		<div class="row">
-			<div class="col-md-8">
-				<div class="form-group">
-					<label class="control-label" for="eventComment">Add a Comment</label>
-					<input type="text" class="form-control" id="eventComment" name="eventComment" placeholder="ex: Type your comment here." size="160" maxlength="160" required>
+			<div class="form-group">
+				<label class="control-label" for="rating">How would you rate this event? (1-5)</label>
+				<div class="input-group">
+					<input type="text" class="form-control" id="rating" name="rating" placeholder="Input a rating from 1-5 here." size="20" maxlength="1" required value="<?=$rating?>">
+					<span class="input-group-btn">	
+						<button type="submit" name="createRating" class="btn btn-primary">Submit Rating</button>
+					</span>
 				</div>
-			</div>
-			<div class="col-md-1">
-				<button type="submit" class="btn btn-primary">Post Comment</button>
 			</div>
 		</div>
 	</form>
 </p>
-	
-<button type="submit" class="btn btn-primary">Join Event</button>
+<?php
+    $message = $message ? htmlentities($_POST['message']) : '';
+?>
+<p>
+	<form role="form" action"" method="post">
+		<div class="row">
+			<div class="form-group">
+				<label class="control-label" for="message">Add a comment</label>
+				<div class="input-group">
+					<input type="text" class="form-control" id="message" name="message" placeholder="Type your comment here." size="160" maxlength="160" required value="<?=$message?>">
+					<span class="input-group-btn">	
+						<button type="submit" name="createComment" class="btn btn-primary">Post Comment</button>
+					</span>
+				</div>
+			</div>				
+		</div>
+	</form>
+</p>
+
+<form role="form" action"" method="post">
+	<button type="submit" name="joinEvent" class="btn btn-primary">Join Event</button>
+</form>
 	
 <?php include TEMPLATE_BOTTOM; ?>
