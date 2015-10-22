@@ -147,7 +147,7 @@
                     <?php else: ?>
 					<div class="form-group">
 						<label class="control-label" for="name">Name</label>
-                        <input type="text" class="form-control" id="name" name="name" placeholder="ex: University of Central Florida (UCF)" pattern="[A-Za-z]+" size="50" maxlength="50" required value="<?=$name?>">
+                        <input type="text" class="form-control" id="name" name="name" placeholder="ex: University of Central Florida (UCF)" pattern="[A-Za-z ]+" size="50" maxlength="50" required value="<?=$name?>">
                     </div>
                     <?php endif; ?>
 				</div>
