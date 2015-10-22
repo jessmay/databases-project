@@ -3,10 +3,33 @@
 	<title>University Profile</title>
 
 <?php include TEMPLATE_MIDDLE; 
-	// TODO Make join button work
-	// Show pictures
+	// TODO Show picture
+	
+	$university_id = 7;
+	
+	$user = $_SESSION['user'];
+	$user_id =$user['User_id'];
+	
+	$user_can_join = false;
 
-	$university_id = 2;
+	$user_in_university_params = array(
+		':user_id' => $user_id
+	);
+	
+	$user_in_university_query = '
+		SELECT U.University_id
+		FROM user U
+		WHERE U.User_id = :user_id
+	';
+	
+	$user_in_university_result = $db->prepare($user_in_university_query);
+	$user_in_university_result->execute($user_in_university_params);
+	$user_in_university_row = $user_in_university_result->fetch();
+	$user_in_university = $user_in_university_row['University_id'];
+
+	if($user_in_university == 1){
+		$user_can_join = true;
+	}
 	
 	$university_query = '
 		SELECT *
@@ -18,6 +41,19 @@
 	$result = $db->prepare($university_query);
 	$result->execute($university_params);
 	$row = $result->fetch();
+	
+	$picture_query = '
+		SELECT P.Url
+		FROM picture P, university_picture UP
+		WHERE UP.University_id = :id AND UP.Picture_id = P.Picture_id
+	';
+	
+	$picture_result = $db->prepare($picture_query);
+	$picture_result->execute($university_params);
+	$picture_row = $picture_result->fetch();
+	$university_picture = $picture_row['Url'];
+	
+	echo "<img src=$university_picture height=100px width=100px />";
 	
 	$university_name = $row['Name'];
 	
@@ -46,9 +82,40 @@
 	echo "<h4>University Description</h4>
 	<p>$uni_description</p>
 	<br>";
-
-?>
 	
-	<button type="submit" class="btn btn-primary">Join University</button>
+	
+	function tryJoinUniversity($db, $university_id, $user_id){
+		
+		$join_university_params = array(
+			':university_id' => $university_id,
+			':user_id' => $user_id
+		);
+		$join_university_query = '
+			UPDATE User U
+			SET U.University_id = :university_id
+			WHERE U.User_id = :user_id
+		';		
+	
+		$join_university_result = $db->prepare($join_university_query);
+		$join_university_result->execute($join_university_params);
+	}
+
+	if($_SERVER['REQUEST_METHOD'] == 'POST') {
+		if(isset($_POST['joinUniversity'])) {
+			$success = tryJoinUniversity(
+				$db,
+				$university_id,
+				$user_id
+			);
+		}
+	}
+	
+?>
+
+<?php if($user_can_join): ?>
+	<form role="form" action"" method="post">
+		<button type="submit" name="joinUniversity" class="btn btn-primary">Join University</button>
+	</form>
+<?php endif; ?>
 
 <?php include TEMPLATE_BOTTOM; ?>
