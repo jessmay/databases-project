@@ -113,28 +113,47 @@
 	}
 	
 	function tryCreateRating($db, $current_user_id, $event_id, $rating){	
-		$create_rating_params = array(
+		$valid_rating_params = array(
 			':user_id' => $current_user_id,
-			':event_id' => $event_id,
-			':rating' => $rating
+			':event_id' => $event_id
 		);
-		$create_rating_query = '
-			INSERT INTO Rating (
-				User_id,
-				Event_id,
-				Rating
-			) VALUES (
-				:user_id,
-				:event_id,
-				:rating
-			)
+		$valid_rating_query = '
+			SELECT COUNT(*) AS Rating_exists
+			FROM rating R
+			WHERE R.Event_id = :event_id AND R.User_id = :user_id
 		';
+		$valid_rating_result = $db->prepare($valid_rating_query);
+		$valid_rating_result->execute($valid_rating_params);
+		$valid_rating_row = $valid_rating_result->fetch();
+		$rating_exists = $valid_rating_row['Rating_exists'];
 		
-		$rating_result = $db
-            ->prepare($create_rating_query)
-            ->execute($create_rating_params);
+		if($rating_exists >= 1){
+			return false;
+		}
+		else {	
+			$create_rating_params = array(
+				':user_id' => $current_user_id,
+				':event_id' => $event_id,
+				':rating' => $rating
+			);
+			$create_rating_query = '
+				INSERT INTO Rating (
+					User_id,
+					Event_id,
+					Rating
+				) VALUES (
+					:user_id,
+					:event_id,
+					:rating
+				)
+			';
 			
-		return true;
+			$rating_result = $db
+				->prepare($create_rating_query)
+				->execute($create_rating_params);
+				
+			return true;
+		}
 	}
 	
 	function tryPostComment($db, $current_user_id, $event_id, $message){
