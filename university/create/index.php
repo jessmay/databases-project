@@ -186,7 +186,7 @@
         The university has been created.
     </p>
     <p>
-		<a href="create/index.php">Return to Form</a>
+		<a href="/university/create">Return to Form</a>
 	</p>
     <?php endif; ?>
 

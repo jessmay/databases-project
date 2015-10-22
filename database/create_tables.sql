@@ -71,7 +71,7 @@ CREATE TABLE IF NOT EXISTS Event (
     Category_id   INTEGER NOT NULL,
     Date_time     DATETIME,
     Name          CHAR(50),
-    Type          CHAR(50),
+    Type          INTEGER NOT NULL,
     Contact_email CHAR(50),
     Contact_phone CHAR(11),
     Description   CHAR(160),

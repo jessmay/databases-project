@@ -46,37 +46,115 @@
 		});
 	</script>
 
-<?php include TEMPLATE_MIDDLE; ?>
+<?php include TEMPLATE_MIDDLE;
+    $success = false;
+    $conflict = false;
+    
+    function tryCreateEvent ($db, $name, $category_id, $description, $event_type, $contact_email, $contact_phone) {
+        $user_id = $_SESSION['user']['User_id'];
+        $approved = 0;
+    
+        // Insert the event information into the Event table
+        $create_event_params = array(
+            ':user_id' => $user_id,
+            ':name' => $name,
+            ':category_id' => $category_id,
+            ':description' => $description,
+            ':event_type' => $event_type,
+            ':contact_email' => $contact_email,
+            ':contact_phone' => $contact_phone,
+            ':approved' => $approved
+        );
+        $create_event_query = '
+            INSERT INTO Event (
+                Admin_id,
+                Name,
+                Category_id,
+                Description,
+                Type,
+                Contact_email,
+                Contact_phone,
+                Approved
+            ) VALUES (
+                :user_id,
+                :name,
+                :category_id,
+                :description,
+                :event_type,
+                :contact_email,
+                :contact_phone,
+                :approved
+            )
+        ';
+        
+        $result = $db
+            ->prepare($create_event_query)
+            ->execute($create_event_params);
+        return true;
+    }
+    
+    // If the user has submitted the form to create an event
+    if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+        if (isset($_POST['createEvent'])) {
+            $success = tryCreateEvent(
+                $db,
+                $_POST['name'],
+                $_POST['category_id'],
+                $_POST['description'],
+                $_POST['event_type'],
+                $_POST['contact_email'],
+                $_POST['contact_phone']
+            );
+        }
+    }
+?>
+
     <h2>
         Create Event
     </h2>
     <hr>
+    <?php
+        $name = $conflict ? htmlentities($_POST['name']) : '';
+        $category_id = $conflict ? htmlentities($_POST['category_id']) : '';
+        $description = $conflict ? htmlentities($_POST['description']) : '';
+        $event_type = $conflict ? htmlentities($_POST['event_type']) : '';
+        $contact_email = $conflict ? htmlentities($_POST['contact_email']) : '';
+        $contact_phone = $conflict ? htmlentities($_POST['contact_phone']) : '';
+    ?>
 	<p>
-		<form>
+		<form role="form" action="" method="post">
 			<div class="row">
 				<div class="col-md-6">
 					<div class="form-group">
-						<label class="control-label" for="eventName">Name</label>
-						<input type="text" class="form-control" id="eventName" name="eventName" placeholder="ex: Career Expo" size="50" maxlength="50" required>
+						<label class="control-label" for="name">Name</label>
+						<input type="text" class="form-control" id="name" name="name" placeholder="ex: Career Expo" size="50" maxlength="50" required value="<?=$name?>">
 					</div>
 				</div>
 				<div class="col-md-6">
 					<div class="form-group">
-						<label for="eventCategory">Category</label>
-						<select class="form-control">
-							<option>Social</option>
-							<option>Fundraiser</option>
-							<option>Tech Talk</option>
-                            <option>Academic</option>
-                            <option>Concert</option>
+						<label for="category">Category</label>
+						<select class="form-control" name="category_id">
+                            <?php
+                                $get_category_query = '
+                                    SELECT C.Category_id, C.Name
+                                    FROM Category C
+                                ';
+                                $result = $db->prepare($get_category_query);
+                                $result->execute();
+                                while ($res = $result->fetch()) {
+                                    echo '<option value="'.$res['Category_id'].'">';
+                                    echo $res['Name'];
+                                    echo '</option>'.PHP_EOL;
+                                }
+                            ?>
 						</select>
 					</div>
 				</div>
 			</div>
 			
 			<div class="form-group">
-				<label for="eventDescription">Description</label>
-				<textarea class="form-control" id="eventDescription" rows="3" placeholder="Add more info" size="160" maxlength="160" required></textarea>
+				<label for="description">Description</label>
+				<textarea class="form-control" id="description" name="description" rows="3" placeholder="Add more info" size="160" maxlength="160" required><?=$description?></textarea>
 			</div>
 			
 			<div class="form-group">
@@ -101,32 +179,28 @@
 					<b>Type</b>
 				</div>
 				<div class="col-md-2">			
-					<input type="radio" name="eventTypes" id="eventTypes1" value="type1" checked="checked"> Public
+					<input type="radio" name="event_type" id="event_type_3" value="3" checked="checked"> Public
 				</div>
 				<div class="col-md-2">
-					<input type="radio" name="eventTypes" id="eventTypes2" value="type2"> Private
+					<input type="radio" name="event_type" id="event_type_1" value="1"> Private
 				</div>
 				<div class="col-md-2">
-					<input type="radio" name="eventTypes" id="eventTypes3" value="type3"> RSO
+					<input type="radio" name="event_type" id="event_type_2" value="2"> RSO
 				</div>
 			</div><br>
 						
 			<div class="row">
 				<div class="col-md-4 form-group">
-					<label for="eventContactName">Contact Name</label>
-					<input type="text" class="form-control" id="eventContactName" placeholder="Name" pattern="[A-Za-z]+" size="50" maxlength="50" required>
+					<label for="contact_email">Contact Email</label>
+					<input type="email" class="form-control" id="contact_email" name="contact_email" placeholder="ex: rso@university.edu" size="50" maxlength="50" required value="<?=$contact_email?>">
 				</div>
 				<div class="col-md-4 form-group">
-					<label for="eventContactEmail">Contact Email</label>
-					<input type="email" class="form-control" id="eventContactEmail" placeholder="ex: rso@university.edu" size="50" maxlength="50" required>
-				</div>
-				<div class="col-md-4 form-group">
-					<label for="eventContactPhone">Contact Phone</label>
-					<input type="tel" class="form-control" id="eventContactPhone" placeholder="ex: 1234567890" pattern="[0-9]{10,11}" size="11" maxlength="11" required>
+					<label for="contact_phone">Contact Phone</label>
+					<input type="tel" class="form-control" id="contact_phone" name="contact_phone" placeholder="ex: 1234567890" pattern="[0-9]{10,11}" size="11" maxlength="11" required value="<?=$contact_phone?>">
 				</div>
 			</div><br>
 			
-			<button type="submit" class="btn btn-primary">Submit</button>
+			<button type="submit" name="createEvent" class="btn btn-primary">Submit</button>
 		</form>
 	</p>
 
