@@ -20,3 +20,6 @@ $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 $db->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
 session_start();
 $logged_in = !empty($_SESSION['user']);
+$is_type_regular = $logged_in ? false : $_SESSION['user']['Type'] == 1;
+$is_type_admin = $logged_in ? false : $_SESSION['user']['Type'] == 2;
+$is_type_super_admin = $logged_in ? false : $_SESSION['user']['Type'] == 3;
