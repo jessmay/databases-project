@@ -6,7 +6,7 @@
     $success = false;
     $name_taken = false;
 
-    function tryCreateUniversity ($db, $name, $student_count, $description, $picture_url) {
+    function tryCreateUniversity ($db, $name, $student_count, $description, $picture_url) {        
         // Check to see if there is a existing university with that name
         $name = strtolower($name);
         $name_used_params = array(':name' => $name);
@@ -21,18 +21,23 @@
         if ($name_taken)
             return false;
         
+        $super_admin_id = $_SESSION['user']['User_id'];     // Only Super_Admins can see the University Form
+        
         // Insert the university information into the University table
         $create_university_params = array(
+            ':super_admin_id' => $super_admin_id,
             ':name' => $name,
             ':student_count' => $student_count,
             ':description' => $description
         );
         $create_university_query = '
             INSERT INTO University (
+                SuperAdmin_id,
                 Name,
                 Student_count,
                 Description
             ) VALUES (
+                :super_admin_id,
                 :name,
                 :student_count,
                 :description
@@ -186,7 +191,7 @@
         The university has been created.
     </p>
     <p>
-		<a href="create/index.php">Return to Form</a>
+		<a href="/university/create">Return to Form</a>
 	</p>
     <?php endif; ?>
 
