@@ -4,8 +4,35 @@
 
 <?php include TEMPLATE_MIDDLE; 
 	// TODO Pass $rso_id into this page from rso search link
+	// Button bug
+	// if rso is pending display?
 
 	$rso_id = 2;
+	
+	$user = $_SESSION['user'];
+	$user_id =$user['User_id'];
+	
+	$user_can_join = false;
+
+	$user_in_RSO_params = array(
+		':RSO_id' => $rso_id,
+		':user_id' => $user_id
+	);
+	
+	$user_in_RSO_query = '
+		SELECT COUNT(*) AS user_joined
+		FROM rso_user R
+		WHERE R.User_id = :user_id AND R.RSO_id = :RSO_id
+	';
+	
+	$user_in_RSO_result = $db->prepare($user_in_RSO_query);
+	$user_in_RSO_result->execute($user_in_RSO_params);
+	$user_in_RSO_row = $user_in_RSO_result->fetch();
+	$user_in_RSO = $user_in_RSO_row['user_joined'];
+
+	if($user_in_RSO==0){
+		$user_can_join = true;
+	}
 	
 	$rso_query = '
 		SELECT *
@@ -29,7 +56,6 @@
 		WHERE U.University_id = UR.University_id AND UR.RSO_id = :id
 	';
 	
-	$uni_id = $row['University_id'];
 	$uni_result = $db->prepare($university_query);
 	$uni_result->execute($rso_params);
 	$uni_row = $uni_result->fetch();
@@ -75,8 +101,41 @@
 	<p>$member_count</p>
 	<br>";
 	
-?>
+	function tryJoinRSO($db, $rso_id, $user_id){	
+		$join_rso_params = array(
+			':rso_id' => $rso_id,
+			':user_id' => $user_id
+		);
+		$join_rso_query = '
+			INSERT INTO RSO_user (
+				RSO_id,
+				User_id
+			) VALUES (
+				:rso_id,
+				:user_id
+			)
+		';		
 	
-	<button type="submit" class="btn btn-primary">Join RSO</button>
+		$join_rso_result = $db->prepare($join_rso_query);
+		$join_rso_result->execute($join_rso_params);
+	}
+
+	if($_SERVER['REQUEST_METHOD'] == 'POST') {
+		if(isset($_POST['joinRSO'])) {
+			$success = tryJoinRSO(
+				$db,
+				$rso_id,
+				$user_id
+			);
+		}
+	}
+	
+?>
+
+<?php if($user_can_join): ?>
+	<form role="form" action"" method="post">
+		<button type="submit" name="joinRSO" class="btn btn-primary">Join RSO</button>
+	</form>
+<?php endif; ?>
 
 <?php include TEMPLATE_BOTTOM; ?>

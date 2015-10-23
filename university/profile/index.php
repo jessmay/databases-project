@@ -3,9 +3,12 @@
 	<title>University Profile</title>
 
 <?php include TEMPLATE_MIDDLE; 
-	// TODO Show picture
+
+	//TODO Button bug
+	//Pull actual university id from session variable set in search page
+	// Change from echo to html
 	
-	$university_id = 7;
+	$university_id = 8;
 	
 	$user = $_SESSION['user'];
 	$user_id =$user['User_id'];
@@ -83,6 +86,7 @@
 	<p>$uni_description</p>
 	<br>";
 	
+	$joined_this_session = false;
 	
 	function tryJoinUniversity($db, $university_id, $user_id){
 		
@@ -98,11 +102,13 @@
 	
 		$join_university_result = $db->prepare($join_university_query);
 		$join_university_result->execute($join_university_params);
+		
+		return true;
 	}
 
 	if($_SERVER['REQUEST_METHOD'] == 'POST') {
 		if(isset($_POST['joinUniversity'])) {
-			$success = tryJoinUniversity(
+			$joined_this_session = tryJoinUniversity(
 				$db,
 				$university_id,
 				$user_id
@@ -113,9 +119,18 @@
 ?>
 
 <?php if($user_can_join): ?>
-	<form role="form" action"" method="post">
+	<form role="form" action="" method="post">
 		<button type="submit" name="joinUniversity" class="btn btn-primary">Join University</button>
 	</form>
+<?php elseif($joined_this_session): ?>
+	<h2>
+        Submitted Request to Join
+    </h2>
+    <hr>
+    <p>
+        Congratulations, you've joined <?php $university_name ?>!
+    </p>
+    <p>
 <?php endif; ?>
 
 <?php include TEMPLATE_BOTTOM; ?>
