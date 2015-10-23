@@ -11,7 +11,7 @@ $bad_login = false;
 
 function doLogin($db, $email, $pass) {
     $login_query = '
-        SELECT U.User_id, U.First_name, U.Password_hash
+        SELECT U.User_id, U.First_name, U.Password_hash, U.Type
         FROM User U
         WHERE U.Email = :email
     ';
@@ -26,7 +26,6 @@ function doLogin($db, $email, $pass) {
     if ($is_match) {
         $_SESSION['user'] = $row;
         header('Location: /');
-        include 'logged_in.php';
     } else {
         $bad_login = true;
         include 'logged_out.php';
