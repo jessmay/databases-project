@@ -4,7 +4,6 @@
 
 <?php include TEMPLATE_MIDDLE;
 	// TODO verify user has permission to view this event
-	// have event id passed into page
 	// RSO association with RSO event
 	// Check that user is not already member of event when join event button is clicked
 	// Verify user has no conflicts when signing up for event
@@ -14,7 +13,8 @@
 	
 	$user = $_SESSION['user'];
 	$user_id =$user['User_id'];
-	$event_id = 2;
+	$event_id = $_GET['id'];
+	
 	
 	$join_event_success=false;
 	$create_comment_success=false;

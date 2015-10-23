@@ -3,11 +3,11 @@
 	<title>RSO Profile Page</title>
 
 <?php include TEMPLATE_MIDDLE; 
-	// TODO Pass $rso_id into this page from rso search link
+	// TODO 
 	// Button bug
 	// if rso is pending display?
 
-	$rso_id = 2;
+	$rso_id = $_GET['id'];
 	
 	$user = $_SESSION['user'];
 	$user_id =$user['User_id'];

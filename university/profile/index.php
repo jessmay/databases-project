@@ -5,10 +5,9 @@
 <?php include TEMPLATE_MIDDLE; 
 
 	//TODO Button bug
-	//Pull actual university id from session variable set in search page
 	// Change from echo to html
 	
-	$university_id = 8;
+	$university_id = $_GET['id'];
 	
 	$user = $_SESSION['user'];
 	$user_id =$user['User_id'];
