@@ -7,15 +7,15 @@
 	// RSO association with RSO event
 	// Check that user is not already member of event when join event button is clicked
 	// Verify user has no conflicts when signing up for event
-	// comments - bugs: wrong timestamp, double posting
-	// ratings - view average, view yours if exists, add yours if yours does not exist
-	// facebook sharing
+	// comments - bug: wrong timestamp
+	// ratings - view average, view yours if exists
 	
 	$user = $_SESSION['user'];
 	$user_id =$user['User_id'];
 	$event_id = $_GET['id'];
+	$url = $_GET['url'];
 	
-	
+	$participating = false;
 	$join_event_success=false;
 	$create_comment_success=false;
 	$create_rating_success=false;
@@ -256,6 +256,8 @@
 	
 ?>
 
+
+
 <?php
 	$rating = $rating ? htmlentities($_POST['rating']) : '';
 ?>
@@ -263,7 +265,7 @@
 	<form role="form" action"" method="post">
 		<div class="row">
 			<div class="form-group">
-				<label class="control-label" for="rating">How would you rate this event? (1-5)</label>
+				<label class="control-label" for="rating">How would you rate this event? (1-5 where 1 is worst and 5 is best)</label>
 				<div class="input-group">
 					<input type="text" class="form-control" id="rating" name="rating" placeholder="Input a rating from 1-5 here." size="20" maxlength="1" required value="<?=$rating?>">
 					<span class="input-group-btn">	
@@ -296,5 +298,6 @@
 <form role="form" action"" method="post">
 	<button type="submit" name="joinEvent" class="btn btn-primary">Join Event</button>
 </form>
+<a class="facebook-share-button" href="https://www.facebook.com/sharer/sharer.php?u=<?php echo urlencode($url); ?>">Share on Facebook</a>
 	
 <?php include TEMPLATE_BOTTOM; ?>
