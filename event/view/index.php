@@ -5,15 +5,13 @@
 <?php include TEMPLATE_MIDDLE;
 	// TODO verify user has permission to view this event
 	// RSO association with RSO event
-	// Check that user is not already member of event when join event button is clicked
 	// Verify user has no conflicts when signing up for event
-	// comments - bug: wrong timestamp
 	// ratings - view average, view yours if exists
 	
 	$user = $_SESSION['user'];
 	$user_id =$user['User_id'];
 	$event_id = $_GET['id'];
-	$url = $_GET['url'];
+	$url = $_SERVER['REQUEST_URI'];
 	
 	$participating = false;
 	$join_event_success=false;
@@ -78,40 +76,6 @@
 	<p>Email:	$event_email</p>
 	<hr>";
 	
-	
-	$comment_query = '
-		SELECT *
-		FROM comment C
-		WHERE C.Event_id = :id
-	';
-	
-	$comment_result = $db->prepare($comment_query);
-	$comment_result->execute($event_params);
-	
-	echo "<h4>Comments:</h4>";
-	
-	while($comment_rows = $comment_result->fetch()) {
-		$user_id = $comment_rows['User_id'];
-		
-		$user_query = '
-			SELECT U.First_name, U.Last_name
-			FROM user U
-			WHERE U.User_id = :user_id
-		';
-		
-		$user_params = array(':user_id' => $user_id);
-		$user_result = $db->prepare($user_query);
-		$user_result->execute($user_params);
-		$user_row = $user_result->fetch();
-		
-		$user_first_name = $user_row['First_name'];
-		$user_last_name = $user_row['Last_name'];
-		
-		$comment = $comment_rows['Message'];
-		$time = $comment_rows['Date'];
-		echo "<h5><strong>$user_first_name $user_last_name:</strong>$comment</h5><h6>$time</h6><hr>";
-	}
-	
 	function tryCreateRating($db, $current_user_id, $event_id, $rating){	
 		$valid_rating_params = array(
 			':user_id' => $current_user_id,
@@ -157,10 +121,8 @@
 	}
 	
 	function tryPostComment($db, $current_user_id, $event_id, $message){
-
-		$date = getdate();
-		$date = str_replace("/","-",$date);
-		$sql_date = date('Y-m-d', strtotime($date));
+	
+		$sql_date = date("Y-m-d H:i:s");
 	
 		$create_comment_params = array(
 			':user_id' => $current_user_id,
@@ -277,6 +239,36 @@
 	</form>
 </p>
 <?php
+	$comment_query = '
+		SELECT *
+		FROM comment C
+		WHERE C.Event_id = :id
+	';
+	
+	$comment_result = $db->prepare($comment_query);
+	$comment_result->execute($event_params);
+	
+	while($comment_rows = $comment_result->fetch()) {
+		$user_id = $comment_rows['User_id'];
+		
+		$user_query = '
+			SELECT U.First_name, U.Last_name
+			FROM user U
+			WHERE U.User_id = :user_id
+		';
+		
+		$user_params = array(':user_id' => $user_id);
+		$user_result = $db->prepare($user_query);
+		$user_result->execute($user_params);
+		$user_row = $user_result->fetch();
+		
+		$user_first_name = $user_row['First_name'];
+		$user_last_name = $user_row['Last_name'];
+		
+		$comment = $comment_rows['Message'];
+		$time = $comment_rows['Date'];
+		echo "<h5><strong>$user_first_name $user_last_name:</strong>$comment</h5><h6>$time</h6><hr>";
+	}
     $message = $message ? htmlentities($_POST['message']) : '';
 ?>
 <p>
