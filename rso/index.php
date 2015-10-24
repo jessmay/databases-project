@@ -32,11 +32,13 @@
         $result->execute($rso_params);
         $number = $result->rowCount();
         
-        echo "<h3><strong>$number result(s) found seaching for '$search_string'. </strong></h3><hr><br>";
+        echo "<h3><strong>$number result(s) found searching for '$search_string'. </strong></h3><hr><br>";
 
         while($row = $result->fetch()){
             $Name =$row['Name'];
-            echo "<h3><strong>$Name</strong></h3><hr>";
+            $ID = $row['RSO_id'];
+
+            echo "<a href='/rso/profile?id=$ID'><h3><strong>$Name</strong></h3><hr></a>";
         }
     }
     
