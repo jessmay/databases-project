@@ -5,10 +5,13 @@
     <hr>
     <div class="row">
         <div class="col-xs-6">
-            <h3>Calendar</h3>
+            <h3>
+                <span class="glyphicon glyphicon-calendar" aria-hidden="true">
+                </span>&nbsp;Calendar
+            </h3>
             <?php
                 $event_query = '
-                    SELECT E.Name, E.Date_time
+                    SELECT E.Name, E.Date_time, E.Event_id
                     FROM User U, Event_user R, Event E
                     WHERE U.User_id = :user_id
                     AND U.User_id = R.User_id 
@@ -19,18 +22,26 @@
                 );
                 $result = $db->prepare($event_query);
                 $result->execute($event_params);
-                echo '<ul>';
+                echo '';
                 while ($row = $result->fetch()) {
-                    echo '<li>'.date('F jS, Y (g a)', strtotime($row['Date_time'])).': '.$row['Name'].'</li>'."\n";
+                    echo '<p><mark>';
+                    echo date('F jS, Y (g a)', strtotime($row['Date_time']));
+                    echo '</mark> : ';
+                    echo '<a href="/event/view?id='.$row['Event_id'].'">';
+                    echo $row['Name'].'</a>';
+                    echo '</p>'."\n";
                 }
-                echo '</ul>'
+                echo '';
             ?>
         </div>
         <div class="col-xs-6">
-            <h3>University</h3>
+            <h3>
+                <span class="glyphicon glyphicon-education" aria-hidden="true">
+                </span>&nbsp;University
+            </h3>
             <?php
                 $university_query = '
-                    SELECT N.Name
+                    SELECT N.Name, N.University_id
                     FROM University N, User U
                     WHERE U.User_id = :user_id 
                     AND U.University_id = N.University_id
@@ -41,16 +52,23 @@
                 $result = $db->prepare($university_query);
                 $result->execute($university_params);
                 $row = $result->fetch();
-                echo '<span>'.$row['Name'].'</span>';
+                echo '<a href="/university/profile?id=';
+                echo $row['University_id'];
+                echo '">';
+                //echo ' ';
+                echo $row['Name'].'</a>';
             ?>
         </div>
     </div>
     <div class="row">
         <div class="col-xs-6">
-            <h3>RSOs</h3>
+            <h3>
+                <span class="glyphicon glyphicon-blackboard" aria-hidden="true">
+                </span>&nbsp;RSOs
+            </h3>
             <?php
                 $rso_query = '
-                    SELECT R.Name
+                    SELECT R.Name, R.RSO_id
                     FROM RSO R, RSO_user H
                     WHERE R.RSO_id = H.RSO_id
                     AND H.User_id = :user_id
@@ -61,11 +79,14 @@
                 $result = $db->prepare($rso_query);
                 $result->execute($rso_params);
                 $row = $result->fetch();
-                echo '<span>'.$row['Name'].'</span>';
+                echo '<p><a href="/rso/profile?id='.$row['RSO_id'].'">'.$row['Name'].'</a></p>';
             ?>
         </div>
         <div class="col-xs-6">
-            <h3>Events to approve</h3>
+            <h3>
+                <span class="glyphicon glyphicon-check" aria-hidden="true">
+                </span>&nbsp;Events to approve
+            </h3>
             <?php
                 if ($is_type_super_admin) {
                     echo '<span>You are one smooth super admin.</span>';
