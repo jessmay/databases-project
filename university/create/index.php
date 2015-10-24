@@ -8,12 +8,14 @@
 
     function tryCreateUniversity ($db, $name, $student_count, $description, $picture_url) {        
         // Check to see if there is a existing university with that name
-        $name = strtolower($name);
-        $name_used_params = array(':name' => $name);
+        $lower_name = strtolower($name);
+        $name_used_params = array(
+            ':lower_name' => $lower_name
+        );
         $name_used_query = '
             SELECT COUNT(*)
             FROM University U
-            WHERE U.Name = :name
+            WHERE LOWER(U.Name) = :lower_name
         ';
         $result = $db->prepare($name_used_query);
         $result->execute($name_used_params);
@@ -146,20 +148,20 @@
                     <?php if ($name_taken): ?>
 					<div class="form-group has-error">
 						<label class="control-label" for="name">Name</label>
-                        <input type="text" class="form-control" id="name" name="name" placeholder="ex: University of Central Florida (UCF)" pattern="[A-Za-z ]+" size="50" maxlength="50" required value="<?=$name?>">
+                        <input type="text" class="form-control" id="name" name="name" placeholder="ex: University of Central Florida (UCF)" size="50" maxlength="50" required value="<?=$name?>">
                         <span id="invalidName" class="help-block">This university has already been created.</span>
                     </div>
                     <?php else: ?>
 					<div class="form-group">
 						<label class="control-label" for="name">Name</label>
-                        <input type="text" class="form-control" id="name" name="name" placeholder="ex: University of Central Florida (UCF)" pattern="[A-Za-z ]+" size="50" maxlength="50" required value="<?=$name?>">
+                        <input type="text" class="form-control" id="name" name="name" placeholder="ex: University of Central Florida (UCF)" size="50" maxlength="50" required value="<?=$name?>">
                     </div>
                     <?php endif; ?>
 				</div>
 				<div class="col-md-6">
 					<div class="form-group">
 						<label for="student_count">Number of Students</label>
-						<input type="number" class="form-control" id="student_count" name="student_count" placeholder="ex: 60576" min="0" max="10000000" required value="<?=$student_count?>">
+						<input type="number" class="form-control" id="student_count" name="student_count" placeholder="ex: 60576" min="0" max="10000000000" required value="<?=$student_count?>">
 					</div>
 				</div>
 			</div>
