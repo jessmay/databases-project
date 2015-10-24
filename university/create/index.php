@@ -50,6 +50,9 @@
             ->prepare($create_university_query)
             ->execute($create_university_params);
         
+        if ($picture_url == '')
+            return true;
+        
         // Insert the picture url into the Picture table
         $create_picture_params = array(
             ':picture_url' => $picture_url
@@ -178,7 +181,7 @@
             
             <div class="form-group">
 				<label for="picture_url">Picture</label>
-				<input type="url" class="form-control" id="picture_url" name="picture_url" placeholder="ex: https://ucf.edu/logo.png" size="200" maxlength="200" required value="<?=$picture_url?>">
+				<input type="url" class="form-control" id="picture_url" name="picture_url" placeholder="ex: https://ucf.edu/logo.png" size="200" maxlength="200" value="<?=$picture_url?>">
 			</div><br>
             
 			<button type="submit" name="createUniversity" class="btn btn-primary">Submit</button>

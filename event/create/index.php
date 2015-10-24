@@ -49,10 +49,16 @@
 <?php include TEMPLATE_MIDDLE;
     $success = false;
     $conflict = false;
+    $event_type_submit = 3;
     
     function tryCreateEvent ($db, $name, $category_id, $description, $event_date, $event_time, $event_type, $contact_email, $contact_phone) {
         $admin_id = $_SESSION['user']['User_id'];   // Only Admins can see the Event Form
+        
         $approved = 0;
+        if ($event_type == 2)
+        {
+            $approved = 1;
+        }
         
         list($month, $day, $year) = explode('/', $event_date);
         list($hour, $dayType) = explode(' ', $event_time);
@@ -118,6 +124,7 @@
                 $_POST['contact_phone']
             );
             $conflict = !$success;
+            $event_type_submit = $_POST['event_type'];
         }
     }
 ?>
@@ -132,8 +139,8 @@
         $category_id = $conflict ? htmlentities($_POST['category_id']) : '';
         $description = $conflict ? htmlentities($_POST['description']) : '';
         $event_date = $conflict ? htmlentities($_POST['event_date']) : '';
-        $event_time = $conflict ? htmlentities($_POST['event_time']) : '';
-        $event_type = $conflict ? htmlentities($_POST['event_type']) : '';
+        $event_time = $conflict ? htmlentities($_POST['event_time']) : '12 PM';
+        $event_type = $conflict ? htmlentities($_POST['event_type']) : '3';
         $contact_email = $conflict ? htmlentities($_POST['contact_email']) : '';
         $contact_phone = $conflict ? htmlentities($_POST['contact_phone']) : '';
     ?>
@@ -186,7 +193,7 @@
 				<div class="col-md-2"></div>
 				<div class="col-md-4 form-group">
 					<label for="event_time">Time</label>
-					<input type="text" id="timespinner" name="event_time" value="12 PM" pattern="(1|2|3|4|5|6|7|8|9|10|11|12) (PM|AM)" required value="<?=$event_time?>">
+					<input type="text" id="timespinner" name="event_time" pattern="(1|2|3|4|5|6|7|8|9|10|11|12) (PM|AM)" required value="<?=$event_time?>">
 				</div>
 			</div>
 			
@@ -195,13 +202,13 @@
 					<b>Type</b>
 				</div>
 				<div class="col-md-2">			
-					<input type="radio" name="event_type" id="event_type_3" value="3" checked="checked"> Public
+					<input type="radio" name="event_type" id="event_type_3" value="3" <?php if ($event_type == 3) echo 'checked="checked"' ?>> Public
 				</div>
 				<div class="col-md-2">
-					<input type="radio" name="event_type" id="event_type_1" value="1"> Private
+					<input type="radio" name="event_type" id="event_type_1" value="1" <?php if ($event_type == 1) echo 'checked="checked"' ?> > Private
 				</div>
 				<div class="col-md-2">
-					<input type="radio" name="event_type" id="event_type_2" value="2"> RSO
+					<input type="radio" name="event_type" id="event_type_2" value="2" <?php if ($event_type == 2) echo 'checked="checked"' ?> > RSO
 				</div>
 			</div><br>
 						
@@ -224,9 +231,15 @@
         Submitted Form
     </h2>
     <hr>
-    <p>
-        The event has been created.
-    </p>
+        <?php if ($event_type_submit == 2): ?>
+        <p>
+            The event has been created.
+        </p>
+        <?php else: ?>
+        <p>
+            The event is pending approval.
+        </p>
+        <?php endif; ?>
     <p>
         <a href="/event/create">Return to Form</a>
     </p>
