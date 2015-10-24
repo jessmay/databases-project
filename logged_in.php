@@ -78,8 +78,10 @@
                 );
                 $result = $db->prepare($rso_query);
                 $result->execute($rso_params);
-                $row = $result->fetch();
-                echo '<p><a href="/rso/profile?id='.$row['RSO_id'].'">'.$row['Name'].'</a></p>';
+                while ($row = $result->fetch()) {
+                    echo '<p><a href="/rso/profile?id='.$row['RSO_id'].'">';
+                    echo $row['Name'].'</a></p>';
+                }
             ?>
         </div>
         <div class="col-xs-6">
