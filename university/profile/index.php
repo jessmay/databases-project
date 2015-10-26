@@ -52,10 +52,10 @@
 	
 	$picture_result = $db->prepare($picture_query);
 	$picture_result->execute($university_params);
-	$picture_row = $picture_result->fetch();
-	$university_picture = $picture_row['Url'];
-	
-	echo "<img src=$university_picture height=100px width=100px />";
+	while($picture_row = $picture_result->fetch()){
+		$university_picture = $picture_row['Url'];
+		echo "<img src='$university_picture' class='img-thumbnail' width=100 height=100>";
+	}
 	
 	$university_name = $row['Name'];
 	
