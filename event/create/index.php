@@ -1,4 +1,5 @@
 <?php include '../../init.php'; ?>
+<?php include MUST_BE_ADMIN; ?>
 <?php include TEMPLATE_TOP; ?>
 	<title>Create Event</title>
 	<script>

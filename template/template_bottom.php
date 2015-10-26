@@ -14,8 +14,14 @@
 						<h3>Events</h3>
 						<ul class="nav nav-pills nav-stacked">
 							<li role="presentation"><a href="/event">Find Event</a></li>
+                            <?php
+                                if ($is_type_super_admin || $is_type_admin):
+                            ?>
 							<li role="presentation"><a href="/event/create">Create Event</a></li>
-						</ul>
+                            <?php
+                                endif;
+                            ?>
+                        </ul>
 					</div>
 				</div>
 			</div>
