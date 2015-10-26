@@ -87,44 +87,58 @@
             ?>
         </div>
     </div>
+    <?php
+    if ($is_type_super_admin):
+    ?>
     <div class="row">
         <div class="col-xs-12">
             <h3>
                 <span class="glyphicon glyphicon-check" aria-hidden="true">
                 </span>&nbsp;Events to approve
             </h3>
+            <script>
+                $(function() {
+                    $('button.approve-btn').click(function(e){
+                        $(this).closest('tr').remove();
+                        $.post("approve_event.php", {id : $(this).attr('event_id')});
+                    });
+                    $('button.delete-btn').click(function(e){
+                        $(this).closest('tr').remove();
+                        $.post("delete_event.php", {id : $(this).attr('event_id')});
+                    });
+                });
+            </script>
             <?php
-                if ($is_type_super_admin) {
-                    $approval_query = '
-                        SELECT E.Event_id, E.Admin_id, E.Name
-                        FROM Event E
-                        WHERE Approved = 0
-                    ';
-                    $result = $db->prepare($approval_query);
-                    $result->execute();
-                    echo '<table class="table">';
-                    while ($row = $result->fetch()) {
-                        echo '<tr><td>';
-                        
-                        echo '<a href="/event/view?id='.$row['Event_id'].'">';
-                        echo $row['Name'].'</a>';
-                        echo '</td><td>';
-                        ?>
-                        <span class="btn-group btn-group-xs pull-right" role="group" aria-label="...">
-                          <button type="button" class="btn btn-default"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span></button>
-                          <button type="button" class="btn btn-default"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></button>
-                        </span>
-                        <?php
-                        //echo '<button type="button" class="close" aria-label="Close" style="padding-left:8px"><span aria-hidden="true">&times;</span></button>';
-                        //echo '<button type="button" class="close" aria-label="Close"><span aria-hidden="true">&check;</span></button>';
-                        echo '</td></tr>';
-                    }
-                    echo '</table>';
-                } else {
-                    echo '<span>Do you think you\'re'.
-                         ' some kind of super admin or what?</span>';
+                $approval_query = '
+                    SELECT E.Event_id, E.Admin_id, E.Name
+                    FROM Event E
+                    WHERE Approved = 0
+                ';
+                $result = $db->prepare($approval_query);
+                $result->execute();
+                echo '<table class="table">';
+                while ($row = $result->fetch()) {
+                    echo '<tr><td>';
+                    echo '<a href="/event/view?id='.$row['Event_id'].'">';
+                    echo $row['Name'].'</a>';
+                    echo '</td><td>';
+                    ?>
+                    <span class="btn-group btn-group-xs pull-right" role="group" aria-label="...">
+                        <button type="button" class="btn btn-default approve-btn" event_id="<?=$row['Event_id']?>">
+                            <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
+                        </button>
+                        <button type="button" class="btn btn-default delete-btn" event_id="<?=$row['Event_id']?>">
+                            <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+                        </button>
+                    </span>
+                    <?php
+                    echo '</td></tr>';
                 }
+                echo '</table>';
             ?>
         </div>
     </div>
+    <?php
+    endif;
+    ?>
 </div>
