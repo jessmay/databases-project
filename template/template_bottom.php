@@ -28,7 +28,7 @@
 			<hr>
 			<footer>
 				<p>
-					&copy; <?=date('Y')?> Group 9 - Nigel Carter, Cindy Harn, Hector Hernandez, Jessica May
+					&copy; <?=date('Y')?> Group 31 - Nigel Carter, Cindy Harn, Hector Hernandez, Jessica May
 				</p>
 			</footer>
 		</div>

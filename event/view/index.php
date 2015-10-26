@@ -290,6 +290,6 @@
 <form role="form" action"" method="post">
 	<button type="submit" name="joinEvent" class="btn btn-primary">Join Event</button>
 </form>
-<a class="facebook-share-button" href="https://www.facebook.com/sharer/sharer.php?u=<?php echo urlencode($url); ?>">Share on Facebook</a>
+<a class="facebook-share-button" href="https://www.facebook.com/dialog/share?app_id=145634995501895&display=popup&href=localhost:8080<?php echo urlencode($url); ?>&redirect_uri=https%3A%2F%2Fdevelopers.facebook.com%2Ftools%2Fexplorer" target="_blank">Share on Facebook</a>
 	
 <?php include TEMPLATE_BOTTOM; ?>

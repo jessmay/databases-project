@@ -6,36 +6,6 @@
     <div class="row">
         <div class="col-xs-6">
             <h3>
-                <span class="glyphicon glyphicon-calendar" aria-hidden="true">
-                </span>&nbsp;Calendar
-            </h3>
-            <?php
-                $event_query = '
-                    SELECT E.Name, E.Date_time, E.Event_id
-                    FROM User U, Event_user R, Event E
-                    WHERE U.User_id = :user_id
-                    AND U.User_id = R.User_id 
-                    AND R.Event_id = E.Event_id
-                ';
-                $event_params = array(
-                    ':user_id' => $_SESSION['user']['User_id']
-                );
-                $result = $db->prepare($event_query);
-                $result->execute($event_params);
-                echo '';
-                while ($row = $result->fetch()) {
-                    echo '<p><mark>';
-                    echo date('F jS, Y (g a)', strtotime($row['Date_time']));
-                    echo '</mark> : ';
-                    echo '<a href="/event/view?id='.$row['Event_id'].'">';
-                    echo $row['Name'].'</a>';
-                    echo '</p>'."\n";
-                }
-                echo '';
-            ?>
-        </div>
-        <div class="col-xs-6">
-            <h3>
                 <span class="glyphicon glyphicon-education" aria-hidden="true">
                 </span>&nbsp;University
             </h3>
@@ -59,8 +29,6 @@
                 echo $row['Name'].'</a>';
             ?>
         </div>
-    </div>
-    <div class="row">
         <div class="col-xs-6">
             <h3>
                 <span class="glyphicon glyphicon-blackboard" aria-hidden="true">
@@ -78,20 +46,80 @@
                 );
                 $result = $db->prepare($rso_query);
                 $result->execute($rso_params);
+                echo '<table class="table">';
                 while ($row = $result->fetch()) {
-                    echo '<p><a href="/rso/profile?id='.$row['RSO_id'].'">';
-                    echo $row['Name'].'</a></p>';
+                    echo '<tr><td><a href="/rso/profile?id='.$row['RSO_id'].'">';
+                    echo $row['Name'].'</a></td></tr>';
                 }
+                echo '</table>';
             ?>
         </div>
-        <div class="col-xs-6">
+    </div>
+    <div class="row">
+        <div class="col-xs-12">
+            <h3>
+                <span class="glyphicon glyphicon-calendar" aria-hidden="true">
+                </span>&nbsp;Calendar
+            </h3>
+            <?php
+                $event_query = '
+                    SELECT E.Name, E.Date_time, E.Event_id
+                    FROM User U, Event_user R, Event E
+                    WHERE U.User_id = :user_id
+                    AND U.User_id = R.User_id 
+                    AND R.Event_id = E.Event_id
+                ';
+                $event_params = array(
+                    ':user_id' => $_SESSION['user']['User_id']
+                );
+                $result = $db->prepare($event_query);
+                $result->execute($event_params);
+                echo '<table class="table">';
+                while ($row = $result->fetch()) {
+                    echo '<tr><td><mark>';
+                    echo date('F jS, Y (g a)', strtotime($row['Date_time']));
+                    echo '</mark></td><td>';
+                    echo '<a href="/event/view?id='.$row['Event_id'].'">';
+                    echo $row['Name'].'</a>';
+                    echo '</td></tr>'."\n";
+                }
+                echo '</table>';
+            ?>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xs-12">
             <h3>
                 <span class="glyphicon glyphicon-check" aria-hidden="true">
                 </span>&nbsp;Events to approve
             </h3>
             <?php
                 if ($is_type_super_admin) {
-                    echo '<span>You are one smooth super admin.</span>';
+                    $approval_query = '
+                        SELECT E.Event_id, E.Admin_id, E.Name
+                        FROM Event E
+                        WHERE Approved = 0
+                    ';
+                    $result = $db->prepare($approval_query);
+                    $result->execute();
+                    echo '<table class="table">';
+                    while ($row = $result->fetch()) {
+                        echo '<tr><td>';
+                        
+                        echo '<a href="/event/view?id='.$row['Event_id'].'">';
+                        echo $row['Name'].'</a>';
+                        echo '</td><td>';
+                        ?>
+                        <span class="btn-group btn-group-xs pull-right" role="group" aria-label="...">
+                          <button type="button" class="btn btn-default"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span></button>
+                          <button type="button" class="btn btn-default"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></button>
+                        </span>
+                        <?php
+                        //echo '<button type="button" class="close" aria-label="Close" style="padding-left:8px"><span aria-hidden="true">&times;</span></button>';
+                        //echo '<button type="button" class="close" aria-label="Close"><span aria-hidden="true">&check;</span></button>';
+                        echo '</td></tr>';
+                    }
+                    echo '</table>';
                 } else {
                     echo '<span>Do you think you\'re'.
                          ' some kind of super admin or what?</span>';
