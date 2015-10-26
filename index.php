@@ -11,7 +11,7 @@ $bad_login = false;
 
 function doLogin($db, $email, $pass) {
     $login_query = '
-        SELECT U.User_id, U.First_name, U.Password_hash, U.Type
+        SELECT U.User_id, U.First_name, U.Password_hash, U.Type, U.University_id
         FROM User U
         WHERE U.Email = :email
     ';

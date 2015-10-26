@@ -110,12 +110,17 @@
             </script>
             <?php
                 $approval_query = '
-                    SELECT E.Event_id, E.Admin_id, E.Name
-                    FROM Event E
-                    WHERE Approved = 0
+                    SELECT E.Event_id, E.Name
+                    FROM Event E, User U
+                    WHERE E.Approved = 0
+                    AND E.Admin_id = U.User_id
+                    AND U.University_id = :university_id
                 ';
                 $result = $db->prepare($approval_query);
-                $result->execute();
+                $approval_params = array(
+                    ':university_id' => $_SESSION['user']['University_id']
+                );
+                $result->execute($approval_params);
                 echo '<table class="table">';
                 while ($row = $result->fetch()) {
                     echo '<tr><td>';
