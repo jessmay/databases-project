@@ -53,6 +53,9 @@
         if ($picture_url == '')
             return true;
         
+        // Find the university_id from the University table
+        $university_id = $db->lastInsertId();
+        
         // Insert the picture url into the Picture table
         $create_picture_params = array(
             ':picture_url' => $picture_url
@@ -68,34 +71,9 @@
         $result = $db
             ->prepare($create_picture_query)
             ->execute($create_picture_params);
-        
-        // Find the university_id from the University table
-        $find_university_params = array(
-            ':name' => $name
-        );
-        $find_university_query = '
-            SELECT University_id
-            FROM University U
-            WHERE U.Name = :name
-        ';
-        
-        $result = $db->prepare($find_university_query);
-        $result->execute($find_university_params);
-        $university_id = $result->fetch()['University_id'];
-        
+                
         // Find the picture_id from the Picture table
-        $find_picture_params = array(
-            ':picture_url' => $picture_url
-        );
-        $find_picture_query = '
-            SELECT Picture_id
-            FROM Picture P
-            WHERE P.Url = :picture_url
-        ';
-        
-        $result = $db->prepare($find_picture_query);
-        $result->execute($find_picture_params);
-        $picture_id = $result->fetch()['Picture_id'];
+        $picture_id = $db->lastInsertId();
         
         // Insert the relation into the University_Picture table
         $create_picture_relation_params = array(
