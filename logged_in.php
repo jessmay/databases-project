@@ -122,6 +122,9 @@
                 );
                 $result->execute($approval_params);
                 echo '<table class="table">';
+                if ($result->rowCount() === 0) {
+                    echo '<span>You have no events to approve. <span class="glyphicon glyphicon-thumbs-up"></span></span>';
+                }
                 while ($row = $result->fetch()) {
                     echo '<tr><td>';
                     echo '<a href="/event/view?id='.$row['Event_id'].'">';

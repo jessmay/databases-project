@@ -1,27 +1,30 @@
 				</div>
 				<div class="col-xs-6 col-sm-3 sidebar-offcanvas" id="sidebar">
 					<div class="list-group">
-						<h3>RSOs</h3>
+						<h3><span class="glyphicon glyphicon-search" style="padding-right:8px;vertical-align:top"></span>Search</h3>
 						<ul class="nav nav-pills nav-stacked">
-							<li role="presentation"><a href="/rso">Find RSO</a></li>
-							<li role="presentation"><a href="/rso/create">Create RSO</a></li>
-						</ul>				
-						<h3>Universities</h3>
-						<ul class="nav nav-pills nav-stacked">
-							<li role="presentation"><a href="/university">Find University</a></li>
-							<li role="presentation"><a href="/university/create">Create University</a></li>
+                            <li role="presentation"><a href="/university"><span class="glyphicon glyphicon-education" style="padding-right:8px"></span>University</a></li>
+							<li role="presentation"><a href="/rso"><span class="glyphicon glyphicon-blackboard" style="padding-right:8px"></span>RSO</a></li>
+                            <li role="presentation"><a href="/event"><span class="glyphicon glyphicon-calendar" style="padding-right:8px"></span>Event</a></li>
 						</ul>
-						<h3>Events</h3>
+                        <?php
+                            if ($logged_in):
+                        ?>
+						<h3><span class="glyphicon glyphicon-pencil" style="padding-right:8px;vertical-align:top"></span>Create</h3>
 						<ul class="nav nav-pills nav-stacked">
-							<li role="presentation"><a href="/event">Find Event</a></li>
+							<li role="presentation"><a href="/university/create"><span class="glyphicon glyphicon-education" style="padding-right:8px"></span>University</a></li>
+                            <li role="presentation"><a href="/rso/create"><span class="glyphicon glyphicon-blackboard" style="padding-right:8px"></span>RSO</a></li>
                             <?php
                                 if ($is_type_super_admin || $is_type_admin):
                             ?>
-							<li role="presentation"><a href="/event/create">Create Event</a></li>
+							<li role="presentation"><a href="/event/create"><span class="glyphicon glyphicon-calendar" style="padding-right:8px"></span>Event</a></li>
                             <?php
                                 endif;
                             ?>
-                        </ul>
+						</ul>
+                        <?php
+                            endif;
+                        ?>
 					</div>
 				</div>
 			</div>

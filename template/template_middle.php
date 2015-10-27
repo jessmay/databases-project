@@ -10,14 +10,15 @@
 	</head>
 
 	<body>
-		<nav class="navbar navbar-fixed-top navbar-inverse">
+		<nav class="navbar navbar-default navbar-fixed-top">
 			<div class="container">
 				<div class="navbar-header">
 					<a class="navbar-brand" href="/">
-						Database Project
+                        <span><img src="brand.png" style="padding:0 4px 1px 0">
+						<span>Database Project</span></span>
 					</a>
 				</div>
-				<div id="navbar" class="collapse navbar-collapse">
+				<div id="navbar" class="navbar-collapse">
                     <ul class="nav navbar-nav">
                         <li><a href="/">Home</a></li>
                         <?php if ($logged_in): ?>
