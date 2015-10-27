@@ -4,7 +4,7 @@
     <script>
 		$(function() {
             $('form').on('click', '.addMember', function() {
-                var start = $('#memberList'),
+                var start = $('#member_list'),
                 newMember = $('<div class="form-group"><input type="email" class="form-control" id="rsoMemberEmail" placeholder="Email" size="50" maxlength="50" required></div>');
                 $(start).append(newMember);
             });
@@ -16,6 +16,7 @@
     define('VALID_SUBMIT', 1);
     define('RSO_TAKEN', 2);
     define('INVALID_ADMIN', 3);
+    define('NOT_ALL_UNIQUE', 4);
     
     function checkInvalidEmail($db, $email) {
         $email = strtolower($email);
@@ -37,7 +38,7 @@
         return true;
     }
     
-    function tryCreateRSO($db, $name, $admin_email) {    
+    function tryCreateRSO($db, $name, $admin_email, $member_emails) {    
         // Check if the admin email exists
         $invalid_admin_email = checkInvalidEmail($db, $admin_email);
         if ($invalid_admin_email)
@@ -77,8 +78,19 @@
         if ($name_taken)
             return RSO_TAKEN;
         
-        // Check users are valid and not the same
+        // Add the extra members into the list of emails
+        // TODO LATER: INSERT RSO_USER INFO
         
+        // Check to ensure all emails are unique and not the same as the admin_email
+        $total_members = count($member_emails) + 1;
+        $member_emails_temp = $member_emails;
+        array_push($member_emails_temp, $admin_email);
+        $member_emails_temp = array_unique($member_emails_temp);
+        if (count($member_emails_temp) != $total_members)
+            return NOT_ALL_UNIQUE;
+        
+        // Check users are valid
+                
         // Promote the user type into an admin user-type if applicable (i.e. just a user)
         $find_user_type_params = array(
             ':admin_id' => $admin_id
@@ -153,11 +165,19 @@
     
     // If the user has submitted the form to create a RSO
     if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+        $member_emails = array(
+            $_POST['member_email_1'],
+            $_POST['member_email_2'],
+            $_POST['member_email_3'],
+            $_POST['member_email_4']
+        ); 
+        
         if (isset($_POST['createRSO'])) {
             $status = tryCreateRSO(
                 $db,
                 $_POST['name'],
-                $_POST['admin_email']
+                $_POST['admin_email'],
+                $member_emails
             );
         }
     }
@@ -171,14 +191,18 @@
     <?php
         $name = ($status == 0) ? '' : htmlentities($_POST['name']);
         $admin_email = ($status == 0) ? '' : htmlentities($_POST['admin_email']);
+        $member_email_1 = ($status == 0) ? '' : htmlentities($_POST['member_email_1']);
+        $member_email_2 = ($status == 0) ? '' : htmlentities($_POST['member_email_2']);
+        $member_email_3 = ($status == 0) ? '' : htmlentities($_POST['member_email_3']);
+        $member_email_4 = ($status == 0) ? '' : htmlentities($_POST['member_email_4']);
     ?>
 	<p>
 		<form role="form" action="" method="post">
-            <?php if ($status == RSO_TAKEN) : ?>
+            <?php if ($status == RSO_TAKEN): ?>
             <div class="form-group has-error">
                 <label class="control-label" for="name">Name</label>
                 <input type="text" class="form-control" id="name" name="name" placeholder="ex: Student Government Association (SGA)" size="50" maxlength="50" required value="<?=$name?>">
-                <span id="invalidAdmin" class="help-block">This RSO has already been created.</span>
+                <span id="rso_taken" class="help-block">This RSO has already been created.</span>
             </div>
             <?php else: ?>
             <div class="form-group">
@@ -186,11 +210,12 @@
                 <input type="text" class="form-control" id="name" name="name" placeholder="ex: Student Government Association (SGA)" size="50" maxlength="50" required value="<?=$name?>">
             </div>
             <?php endif; ?>
-			<?php if ($status == INVALID_ADMIN) : ?>
+			
+            <?php if ($status == INVALID_ADMIN): ?>
             <div class="form-group has-error">
                 <label for="admin_email">Admin Email</label>
                 <input type="email" class="form-control" id="admin_email" name="admin_email" placeholder="ex: rsoAdmin@university.edu" size="50" maxlength="50" required value="<?=$admin_email?>">
-                <span id="invalidAdmin" class="help-block">Please enter an existing user email.</span>
+                <span id="invalid_admin" class="help-block">Please enter an existing user email.</span>
             </div>
             <?php else: ?>
             <div class="form-group">
@@ -198,23 +223,44 @@
                 <input type="email" class="form-control" id="admin_email" name="admin_email" placeholder="ex: rsoAdmin@university.edu" size="50" maxlength="50" required value="<?=$admin_email?>">
             </div>
             <?php endif; ?>
-            <div id="memberList">
-                <label>List of Members</label> <i>(Note: email domains must all match)</i>
+            
+            <?php if ($status == NOT_ALL_UNIQUE): ?>
+            <div class="has-error" id="member_list">
+                <label class="text-danger">List of Members</label>
+                <span id="not_all_unique" class="help-block">Please enter unique user email addresses.</span>
                 <div class="form-group">
-                    <input type="email" class="form-control" id="rsoMemberEmail1" placeholder="Email" size="50" maxlength="50" required>
+                    <input type="email" class="form-control" id="member_email_1" name="member_email_1" placeholder="Email" size="50" maxlength="50" required value="<?=$member_email_1?>">
                 </div>
                 <div class="form-group">
-                    <input type="email" class="form-control" id="rsoMemberEmail2" placeholder="Email" size="50" maxlength="50" required>
+                    <input type="email" class="form-control" id="member_email_2" name="member_email_2" placeholder="Email" size="50" maxlength="50" required value="<?=$member_email_2?>">
                 </div>
                 <div class="form-group">
-                    <input type="email" class="form-control" id="rsoMemberEmail3" placeholder="Email" size="50" maxlength="50" required>
+                    <input type="email" class="form-control" id="member_email_3" name="member_email_3" placeholder="Email" size="50" maxlength="50" required value="<?=$member_email_3?>">
                 </div>
                 <div class="form-group">
-                    <input type="email" class="form-control" id="rsoMemberEmail4" placeholder="Email" size="50" maxlength="50" required>
+                    <input type="email" class="form-control" id="member_email_4" name="member_email_4" placeholder="Email" size="50" maxlength="50" required value="<?=$member_email_4?>">
                 </div>
             </div>
             <button type="button" class="addMember btn btn-success btn-sm">Add Member</button><br><br><br>
-			
+			<?php else: ?>
+            <div id="member_list">
+                <label>List of Members</label>
+                <div class="form-group">
+                    <input type="email" class="form-control" id="member_email_1" name="member_email_1" placeholder="Email" size="50" maxlength="50" required value="<?=$member_email_1?>">
+                </div>
+                <div class="form-group">
+                    <input type="email" class="form-control" id="member_email_2" name="member_email_2" placeholder="Email" size="50" maxlength="50" required value="<?=$member_email_2?>">
+                </div>
+                <div class="form-group">
+                    <input type="email" class="form-control" id="member_email_3" name="member_email_3" placeholder="Email" size="50" maxlength="50" required value="<?=$member_email_3?>">
+                </div>
+                <div class="form-group">
+                    <input type="email" class="form-control" id="member_email_4" name="member_email_4" placeholder="Email" size="50" maxlength="50" required value="<?=$member_email_4?>">
+                </div>
+            </div>
+            <button type="button" class="addMember btn btn-success btn-sm">Add Member</button><br><br><br>
+            <?php endif; ?>
+            
 			<button type="submit" name="createRSO" class="btn btn-primary">Submit</button>
 	</p>
     <?php else: ?>
