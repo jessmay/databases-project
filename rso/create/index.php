@@ -39,8 +39,8 @@
     
     function tryCreateRSO($db, $name, $admin_email) {    
         // Check if the admin email exists
-        $INVALID_ADMIN_email = checkInvalidEmail($db, $admin_email);
-        if ($INVALID_ADMIN_email)
+        $invalid_admin_email = checkInvalidEmail($db, $admin_email);
+        if ($invalid_admin_email)
             return INVALID_ADMIN;
         
         // Find the user_id and the university_id of the admin

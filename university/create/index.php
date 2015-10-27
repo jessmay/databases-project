@@ -3,10 +3,14 @@
 	<title>Create University</title>
 
 <?php include TEMPLATE_MIDDLE;
-    $success = false;
-    $name_taken = false;
-
-    function tryCreateUniversity($db, $name, $student_count, $description, $picture_url) {        
+    $status = 0;
+    define('VALID_SUBMIT', 1);
+    define('NAME_TAKEN', 2);
+    define('USER_HAS_UNIVERSITY', 3);
+    
+    define('DEFAULT_UNIVERSITY', 1);
+    
+    function tryCreateUniversity($db, $name, $student_count, $description, $picture_url) {
         // Check to see if there is a existing university with that name
         $lower_name = strtolower($name);
         $name_used_params = array(
@@ -19,12 +23,30 @@
         ';
         $result = $db->prepare($name_used_query);
         $result->execute($name_used_params);
-        $name_taken = $result->fetchColumn();
-        if ($name_taken)
-            return false;
+        $univ_name_taken = $result->fetchColumn();
+        if ($univ_name_taken)
+            return NAME_TAKEN;
+                
+        $super_admin_id = $_SESSION['user']['User_id'];
         
-        $super_admin_id = $_SESSION['user']['User_id'];     // Only Super_Admins can see the University Form
+        // Check to see the user is already affliated with a university
+        $find_user_university_params = array(
+            ':super_admin_id' => $super_admin_id
+        );
+        $find_user_university_query = '
+            SELECT University_id
+            FROM User U
+            WHERE U.User_id = :super_admin_id
+        ';
         
+        $result = $db->prepare($find_user_university_query);
+        $result->execute($find_user_university_params);
+        $user_university = $result->fetch()['University_id'];
+        
+        if ($user_university != DEFAULT_UNIVERSITY) {
+            return USER_HAS_UNIVERSITY;
+        }
+                
         // Insert the university information into the University table
         $create_university_params = array(
             ':super_admin_id' => $super_admin_id,
@@ -50,12 +72,28 @@
             ->prepare($create_university_query)
             ->execute($create_university_params);
         
-        if ($picture_url == '')
-            return true;
-        
         // Find the university_id from the University table
         $university_id = $db->lastInsertId();
         
+        // Update the university_id of the user and into a super-admin user-type
+        $update_user_university_params = array(
+            ':super_admin_id' => $super_admin_id,
+            ':university_id' => $university_id
+        );
+        $update_user_university_query = '
+            UPDATE User
+            SET University_id = :university_id, Type = 3
+            WHERE User_id = :super_admin_id
+        ';
+        
+        $result = $db
+            ->prepare($update_user_university_query)
+            ->execute($update_user_university_params);
+                
+        // If there are no pictures to be added, then the form submitted successfully
+        if ($picture_url == '')
+            return VALID_SUBMIT;
+            
         // Insert the picture url into the Picture table
         $create_picture_params = array(
             ':picture_url' => $picture_url
@@ -93,44 +131,49 @@
         $result = $db
             ->prepare($create_picture_relation_query)
             ->execute($create_picture_relation_params);
-        return true;
+        return VALID_SUBMIT;
     }
     
     // If the user has submitted the form to create a university
     if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         if (isset($_POST['createUniversity'])) {
-            $success = tryCreateUniversity(
+            $status = tryCreateUniversity(
                 $db,
                 $_POST['name'],
                 $_POST['student_count'],
                 $_POST['description'],
                 $_POST['picture_url']
             );
-            $name_taken = !$success;
         }
     }
 ?>
 
-    <?php if (!$success): ?>
+    <?php if ($status != VALID_SUBMIT): ?>
     <h2>
         Create University
     </h2>
     <hr>
     <?php
-        $name = $name_taken ? htmlentities($_POST['name']) : '';
-        $student_count = $name_taken ? htmlentities($_POST['student_count']) : '';
-        $description = $name_taken ? htmlentities($_POST['description']) : '';
-        $picture_url = $name_taken ? htmlentities($_POST['picture_url']) : '';
+        $name = ($status == 0) ? '' : htmlentities($_POST['name']);
+        $student_count = ($status == 0) ? '' : htmlentities($_POST['student_count']);
+        $description = ($status == 0) ? '' : htmlentities($_POST['description']);
+        $picture_url = ($status == 0) ? '' : htmlentities($_POST['picture_url']);
     ?>
 	<p>
 		<form role="form" action="" method="post">
         	<div class="row">
 				<div class="col-md-6">
-                    <?php if ($name_taken): ?>
+                    <?php if ($status == NAME_TAKEN): ?>
 					<div class="form-group has-error">
 						<label class="control-label" for="name">Name</label>
                         <input type="text" class="form-control" id="name" name="name" placeholder="ex: University of Central Florida (UCF)" size="50" maxlength="50" required value="<?=$name?>">
                         <span id="invalidName" class="help-block">This university has already been created.</span>
+                    </div>
+                    <?php elseif ($status == USER_HAS_UNIVERSITY): ?>
+                    <div class="form-group has-error">
+						<label class="control-label" for="name">Name</label>
+                        <input type="text" class="form-control" id="name" name="name" placeholder="ex: University of Central Florida (UCF)" size="50" maxlength="50" required value="<?=$name?>">
+                        <span id="invalidName" class="help-block">You are already affiliated with a university.</span>
                     </div>
                     <?php else: ?>
 					<div class="form-group">
