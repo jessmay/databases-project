@@ -5,7 +5,7 @@
 	<hr>
 	<div class="row">
 		<div class="col-xs-6">
-			<h4>Log In</h4>
+			<h4><span class="glyphicon glyphicon-user" style="padding-right:8px"></span>Log In</h4>
 			<form role="form" action="" method="post">
 				<div class="form-group">
 					<input type="email" class="form-control" name="email" placeholder="Email" required>
@@ -29,7 +29,7 @@
 			$email = $email_taken ? htmlentities($_POST['email']) : '';
 		?>
 		<div class="col-xs-6">
-			<h4>Create Account</h4>
+			<h4><span class="glyphicon glyphicon-pencil" style="padding-right:8px"></span>Create Account</h4>
 			<form role="form" action="" method="post">
 				<div class="form-group">
 					<input class="form-control" name="fname" placeholder="First name" value="<?=$fname?>" required>
