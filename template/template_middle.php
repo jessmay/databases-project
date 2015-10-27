@@ -14,7 +14,7 @@
 			<div class="container">
 				<div class="navbar-header">
 					<a class="navbar-brand" href="/">
-                        <span><img src="brand.png" style="padding:0 4px 1px 0">
+                        <span><img src="/brand.png" style="padding:0 4px 1px 0">
 						<span>Database Project</span></span>
 					</a>
 				</div>
