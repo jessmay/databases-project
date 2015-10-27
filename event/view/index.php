@@ -290,6 +290,6 @@
 <form role="form" action"" method="post">
 	<button type="submit" name="joinEvent" class="btn btn-primary">Join Event</button>
 </form>
-<a class="facebook-share-button" href="https://www.facebook.com/sharer/sharer.php?u=<?php echo urlencode($url); ?>">Share on Facebook</a>
+<a href="https://www.facebook.com/sharer.php?u=<?php echo urlencode($url); ?>">Share on Facebook</a>
 	
 <?php include TEMPLATE_BOTTOM; ?>

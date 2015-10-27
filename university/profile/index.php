@@ -5,7 +5,6 @@
 <?php include TEMPLATE_MIDDLE; 
 
 	//TODO Button bug
-	// Change from echo to html
 	
 	$university_id = $_GET['id'];
 	
