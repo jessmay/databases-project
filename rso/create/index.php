@@ -13,9 +13,9 @@
 
 <?php include TEMPLATE_MIDDLE;
     $status = 0;
-    define('valid_submit', 1);
-    define('rso_taken', 2);
-    define('invalid_admin', 3);
+    define('VALID_SUBMIT', 1);
+    define('RSO_TAKEN', 2);
+    define('INVALID_ADMIN', 3);
     
     function checkInvalidEmail($db, $email) {
         $email = strtolower($email);
@@ -39,9 +39,9 @@
     
     function tryCreateRSO($db, $name, $admin_email) {    
         // Check if the admin email exists
-        $invalid_admin_email = checkInvalidEmail($db, $admin_email);
-        if ($invalid_admin_email)
-            return invalid_admin;
+        $INVALID_ADMIN_email = checkInvalidEmail($db, $admin_email);
+        if ($INVALID_ADMIN_email)
+            return INVALID_ADMIN;
         
         // Find the user_id and the university_id of the admin
         $find_user_id_params = array(
@@ -75,12 +75,39 @@
         $result->execute($name_used_params);
         $name_taken = $result->fetchColumn();
         if ($name_taken)
-            return rso_taken;
+            return RSO_TAKEN;
         
         // Check users are valid and not the same
-    
-        // Change user id to admin type
-    
+        
+        // Promote the user type into an admin user-type if applicable (i.e. just a user)
+        $find_user_type_params = array(
+            ':admin_id' => $admin_id
+        );
+        $find_user_type_query = '
+            SELECT Type
+            FROM User U
+            WHERE U.User_id = :admin_id
+        ';
+        
+        $result = $db->prepare($find_user_type_query);
+        $result->execute($find_user_type_params);
+        $user_type = $result->fetch()['Type'];
+        
+        if ($user_type == 1) {
+            $update_user_type_params = array(
+                ':admin_id' => $admin_id
+            );
+            $update_user_type_query = '
+                UPDATE User
+                SET Type = 2
+                WHERE User_id = :admin_id
+            ';
+            
+            $result = $db
+                ->prepare($update_user_type_query)
+                ->execute($update_user_type_params);
+        }
+            
         // Insert the RSO information into the RSO table
         $create_rso_params = array(
             ':name' => $name,
@@ -121,7 +148,7 @@
         $result = $db
             ->prepare($create_rso_relation_query)
             ->execute($create_rso_relation_params);
-        return valid_submit;
+        return VALID_SUBMIT;
     }
     
     // If the user has submitted the form to create a RSO
@@ -132,12 +159,11 @@
                 $_POST['name'],
                 $_POST['admin_email']
             );
-            //$rso_taken = !$success;
         }
     }
 ?>
 
-    <?php if ($status != valid_submit): ?>
+    <?php if ($status != VALID_SUBMIT): ?>
     <h2>
         Create RSO
     </h2>
@@ -148,7 +174,7 @@
     ?>
 	<p>
 		<form role="form" action="" method="post">
-            <?php if ($status == rso_taken) : ?>
+            <?php if ($status == RSO_TAKEN) : ?>
             <div class="form-group has-error">
                 <label class="control-label" for="name">Name</label>
                 <input type="text" class="form-control" id="name" name="name" placeholder="ex: Student Government Association (SGA)" size="50" maxlength="50" required value="<?=$name?>">
@@ -160,7 +186,7 @@
                 <input type="text" class="form-control" id="name" name="name" placeholder="ex: Student Government Association (SGA)" size="50" maxlength="50" required value="<?=$name?>">
             </div>
             <?php endif; ?>
-			<?php if ($status == invalid_admin) : ?>
+			<?php if ($status == INVALID_ADMIN) : ?>
             <div class="form-group has-error">
                 <label for="admin_email">Admin Email</label>
                 <input type="email" class="form-control" id="admin_email" name="admin_email" placeholder="ex: rsoAdmin@university.edu" size="50" maxlength="50" required value="<?=$admin_email?>">
