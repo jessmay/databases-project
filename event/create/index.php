@@ -52,7 +52,7 @@
     $conflict = false;
     $event_type_submit = 3;
     
-    function tryCreateEvent ($db, $name, $category_id, $description, $event_date, $event_time, $event_type, $contact_email, $contact_phone) {
+    function tryCreateEvent($db, $name, $category_id, $description, $event_date, $event_time, $event_type, $contact_email, $contact_phone) {
         $admin_id = $_SESSION['user']['User_id'];   // Only Admins can see the Event Form
         
         $approved = 0;

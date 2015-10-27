@@ -6,7 +6,7 @@
     $success = false;
     $name_taken = false;
 
-    function tryCreateUniversity ($db, $name, $student_count, $description, $picture_url) {        
+    function tryCreateUniversity($db, $name, $student_count, $description, $picture_url) {        
         // Check to see if there is a existing university with that name
         $lower_name = strtolower($name);
         $name_used_params = array(
