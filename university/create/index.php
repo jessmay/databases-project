@@ -10,7 +10,7 @@
     
     define('DEFAULT_UNIVERSITY', 1);
     
-    function tryCreateUniversity($db, $name, $student_count, $description, $picture_url) {
+    function tryCreateUniversity($db, $name, $student_count, $description, $location, $picture_url) {
         // Check to see if there is a existing university with that name
         $lower_name = strtolower($name);
         $name_used_params = array(
@@ -21,15 +21,16 @@
             FROM University U
             WHERE LOWER(U.Name) = :lower_name
         ';
+        
         $result = $db->prepare($name_used_query);
         $result->execute($name_used_params);
         $univ_name_taken = $result->fetchColumn();
+        
         if ($univ_name_taken)
             return NAME_TAKEN;
-                
-        $super_admin_id = $_SESSION['user']['User_id'];
         
         // Check to see the user is already affliated with a university
+        $super_admin_id = $_SESSION['user']['User_id'];
         $find_user_university_params = array(
             ':super_admin_id' => $super_admin_id
         );
@@ -46,13 +47,13 @@
         if ($user_university != DEFAULT_UNIVERSITY) {
             return USER_HAS_UNIVERSITY;
         }
-                
+        
         // Insert the university information into the University table
         $create_university_params = array(
             ':super_admin_id' => $super_admin_id,
             ':name' => $name,
             ':student_count' => $student_count,
-            ':description' => $description
+            ':description' => $description,
         );
         $create_university_query = '
             INSERT INTO University (
@@ -89,7 +90,48 @@
         $result = $db
             ->prepare($update_user_university_query)
             ->execute($update_user_university_params);
-                
+        
+        // TODO: Retrieve the latitude and longitude of the location
+        $location_name = $name . ' ' . $location;
+        
+        // Insert the location into the Location table
+        $create_location_params = array(
+            ':location_name' => $location_name
+        );
+        $create_location_query = '
+            INSERT INTO Location (
+                Name
+            ) VALUES (
+                :location_name
+            )
+        ';
+        
+        $result = $db
+            ->prepare($create_location_query)
+            ->execute($create_location_params);
+        
+        // Find the location_id from the Location table
+        $location_id = $db->lastInsertId();
+        
+        // Insert the relation into the University_Location table
+        $create_location_relation_params = array(
+            ':university_id' => $university_id,
+            ':location_id' => $location_id
+        );
+        $create_location_relation_query = '
+            INSERT INTO University_Location (
+                University_id,
+                Location_id
+            ) VALUES (
+                :university_id,
+                :location_id
+            )
+        ';
+        
+        $result = $db
+            ->prepare($create_location_relation_query)
+            ->execute($create_location_relation_params);
+        
         // If there are no pictures to be added, then the form submitted successfully
         if ($picture_url == '')
             return VALID_SUBMIT;
@@ -142,6 +184,7 @@
                 $_POST['name'],
                 $_POST['student_count'],
                 $_POST['description'],
+                $_POST['location'],
                 $_POST['picture_url']
             );
         }
@@ -157,6 +200,7 @@
         $name = ($status == 0) ? '' : htmlentities($_POST['name']);
         $student_count = ($status == 0) ? '' : htmlentities($_POST['student_count']);
         $description = ($status == 0) ? '' : htmlentities($_POST['description']);
+        $location = ($status == 0) ? '' : htmlentities($_POST['location']);
         $picture_url = ($status == 0) ? '' : htmlentities($_POST['picture_url']);
     ?>
 	<p>
@@ -196,8 +240,8 @@
 			</div>
             
             <div class="form-group">
-				<label for="univLocation">Location</label>
-				<input type="text" class="form-control" id="univLocation" placeholder="ex: Orlando, Florida" size="50" maxlength="50" required>
+				<label for="location">Location</label>
+				<input type="text" class="form-control" id="location" name="location" placeholder="ex: Orlando, Florida" size="50" maxlength="50" required value="<?=$location?>">
 			</div>
             
             <div class="form-group">

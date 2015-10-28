@@ -50,23 +50,31 @@
 <?php include TEMPLATE_MIDDLE;
     $success = false;
     $conflict = false;
-    $event_type_submit = 3;
+    $event_type_submit = 0;
     
-    function tryCreateEvent($db, $name, $category_id, $description, $event_date, $event_time, $event_type, $contact_email, $contact_phone) {
-        $admin_id = $_SESSION['user']['User_id'];   // Only Admins can see the Event Form
+    define('PRIVATE_EVENT', 1);
+    define('RSO_EVENT', 2);
+    define('PUBLIC_EVENT', 3);
+    
+    function tryCreateEvent($db, $name, $category_id, $description, $location, $building, $room_number, $address, $event_date, $event_time, $event_type, $contact_email, $contact_phone) {
+        $admin_id = $_SESSION['user']['User_id'];   // Only Admins or Super-Admins can see the form
         
+        // If the event is an RSO event, then approval from the super-admin isn't needed
         $approved = 0;
-        if ($event_type == 2)
+        if ($event_type == RSO_EVENT)
         {
             $approved = 1;
         }
         
+        // Store the date and time into an appropriate format to insert into the database
         list($month, $day, $year) = explode('/', $event_date);
         list($hour, $dayType) = explode(' ', $event_time);
         $hour = ($hour != 12 && $dayType == "PM") ? $hour + 12 : $hour;
         $date_time = $year . '-' . $month . '-' . $day . ' ' . $hour . ':00:00';
         
         // TODO: Check to see if there is an existing event with the same date, time, and place
+        // This can be done by searching the address, getting the id, and comparing the id
+        // Will have to add another column into the Location table
     
         // Insert the event information into the Event table
         $create_event_params = array(
@@ -107,6 +115,57 @@
         $result = $db
             ->prepare($create_event_query)
             ->execute($create_event_params);
+        
+        // FInd the event_id from the Event table
+        $event_id = $db->lastInsertId();
+        
+        // TODO: Retrieve the latitude and longitude of the address
+        
+        // Create the location name to be stored into the Location table
+        $location_name = $location . ' at ';
+        if ($building != '')
+            $location_name .= $building . ' at ';
+        if ($room_number != '')
+            $location_name .= ' Room ' . $room_number . ' at ';
+        $location_name .= $address;
+        
+        // Insert the location into the Location table
+        $create_location_params = array(
+            ':location_name' => $location_name
+        );
+        $create_location_query = '
+            INSERT INTO Location (
+                Name
+            ) VALUES (
+                :location_name
+            )
+        ';
+        
+        $result = $db
+            ->prepare($create_location_query)
+            ->execute($create_location_params);  
+        
+        // Find the location_id from the Location table
+        $location_id = $db->lastInsertId();
+        
+        // Insert the relation into the Event_Location table
+        $create_location_relation_params = array(
+            ':event_id' => $event_id,
+            ':location_id' => $location_id
+        );
+        $create_location_relation_query = '
+            INSERT INTO Event_Location (
+                Event_id,
+                Location_id
+            ) VALUES (
+                :event_id,
+                :location_id
+            )
+        ';
+        
+        $result = $db
+            ->prepare($create_location_relation_query)
+            ->execute($create_location_relation_params);
         return true;
     }
     
@@ -118,6 +177,10 @@
                 $_POST['name'],
                 $_POST['category_id'],
                 $_POST['description'],
+                $_POST['location'],
+                $_POST['building'],
+                $_POST['room_number'],
+                $_POST['address'],
                 $_POST['event_date'],
                 $_POST['event_time'],
                 $_POST['event_type'],
@@ -139,6 +202,10 @@
         $name = $conflict ? htmlentities($_POST['name']) : '';
         $category_id = $conflict ? htmlentities($_POST['category_id']) : '';
         $description = $conflict ? htmlentities($_POST['description']) : '';
+        $location = $conflict ? htmlentities($_POST['location']) : '';
+        $building = $conflict ? htmlentities($_POST['building']) : '';
+        $room_number = $conflict ? htmlentities($_POST['room_number']) : '';
+        $address = $conflict ? htmlentities($_POST['address']) : '';
         $event_date = $conflict ? htmlentities($_POST['event_date']) : '';
         $event_time = $conflict ? htmlentities($_POST['event_time']) : '12 PM';
         $event_type = $conflict ? htmlentities($_POST['event_type']) : '3';
@@ -181,10 +248,25 @@
 				<textarea class="form-control" id="description" name="description" rows="3" placeholder="Add more info" size="160" maxlength="160" required><?=$description?></textarea>
 			</div>
 			
-			<div class="form-group">
-				<label for="eventLocation">Where</label>
-				<input type="text" class="form-control" id="eventLocation" placeholder="ex: Room 101 of Engineering Building" size="50" maxlength="50" required>
-			</div>
+            <label>Location Details</label>
+            <div class="row">
+                <div class="col-md-5 form-group">
+                    <label for="location" style="font-size:small">Where</label>
+                    <input type="text" class="form-control" id="location" name="location" placeholder="ex: Domino's Pizza" size="30" maxlength="30" required value="<?=$location?>">
+                </div>
+                <div class="col-md-4 form-group">
+                    <label for="building" style="font-size:small">Building Name</label> <i>(optional)</i>
+                    <input type="text" class="form-control" id="building" name="building" placeholder="ex: Student Union" size="30" maxlength="30" value="<?=$building?>">
+                </div>
+                <div class="col-md-3 form-group">
+                    <label for="room_number" style="font-size:small">Room Number</label> <i>(optional)</i>
+                    <input type="text" class="form-control" id="room_number" name="room_number" placeholder="ex: 203" size="10" maxlength="10" value="<?=$room_number?>">
+                </div>
+            </div>
+            <div class="form-group">
+                    <label for="address" style="font-size:small">Address</label>
+                    <input type="text" class="form-control" id="address" name="address" placeholder="ex: 12715 Pegasus Dr, Orlando, FL 32816" size="50" maxlength="50" required value="<?=$address?>">
+            </div>
 			
 			<div class="row">
 				<div class="col-md-4 form-group">
@@ -203,13 +285,13 @@
 					<b>Type</b>
 				</div>
 				<div class="col-md-2">			
-					<input type="radio" name="event_type" id="event_type_3" value="3" <?php if ($event_type == 3) echo 'checked="checked"' ?>> Public
+					<input type="radio" name="event_type" id="event_type_3" value="3" <?php if ($event_type == PUBLIC_EVENT) echo 'checked="checked"' ?>> Public
 				</div>
 				<div class="col-md-2">
-					<input type="radio" name="event_type" id="event_type_1" value="1" <?php if ($event_type == 1) echo 'checked="checked"' ?> > Private
+					<input type="radio" name="event_type" id="event_type_1" value="1" <?php if ($event_type == PRIVATE_EVENT) echo 'checked="checked"' ?> > Private
 				</div>
 				<div class="col-md-2">
-					<input type="radio" name="event_type" id="event_type_2" value="2" <?php if ($event_type == 2) echo 'checked="checked"' ?> > RSO
+					<input type="radio" name="event_type" id="event_type_2" value="2" <?php if ($event_type == RSO_EVENT) echo 'checked="checked"' ?> > RSO
 				</div>
 			</div><br>
 						
@@ -232,7 +314,7 @@
         Submitted Form
     </h2>
     <hr>
-        <?php if ($event_type_submit == 2): ?>
+        <?php if ($event_type_submit == RSO_EVENT): ?>
         <p>
             The event has been created.
         </p>

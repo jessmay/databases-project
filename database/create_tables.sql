@@ -89,7 +89,7 @@ CREATE TABLE IF NOT EXISTS Category (
 
 CREATE TABLE IF NOT EXISTS Location (
     Location_id INTEGER NOT NULL AUTO_INCREMENT,
-    Name        CHAR(50),
+    Name        CHAR(120),
     Latitude    DOUBLE,
     Longitude   DOUBLE,
     PRIMARY KEY (Location_id)
