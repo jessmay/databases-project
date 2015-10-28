@@ -22,11 +22,15 @@
                 $result = $db->prepare($university_query);
                 $result->execute($university_params);
                 $row = $result->fetch();
-                echo '<a href="/university/profile?id=';
-                echo $row['University_id'];
-                echo '">';
-                //echo ' ';
-                echo $row['Name'].'</a>';
+                if ($row['University_id'] != 1) {
+                    echo '<a href="/university/profile?id=';
+                    echo $row['University_id'];
+                    echo '">';
+                    echo $row['Name'].'</a>';
+                } else {
+                    echo '<p>You haven\'t joined a university yet.';
+                    echo ' <a href="/university/">Find your university</a>.</p>';
+                }
             ?>
         </div>
         <div class="col-xs-6">
@@ -46,12 +50,16 @@
                 );
                 $result = $db->prepare($rso_query);
                 $result->execute($rso_params);
-                echo '<table class="table">';
-                while ($row = $result->fetch()) {
-                    echo '<tr><td><a href="/rso/profile?id='.$row['RSO_id'].'">';
-                    echo $row['Name'].'</a></td></tr>';
+                if ($result->rowCount() != 0) {
+                    echo '<table class="table">';
+                    while ($row = $result->fetch()) {
+                        echo '<tr><td><a href="/rso/profile?id='.$row['RSO_id'].'">';
+                        echo $row['Name'].'</a></td></tr>';
+                    }
+                    echo '</table>';
+                } else {
+                    echo '<a href="/RSO/">Find an RSO</a>.';
                 }
-                echo '</table>';
             ?>
         </div>
     </div>
@@ -74,16 +82,21 @@
                 );
                 $result = $db->prepare($event_query);
                 $result->execute($event_params);
-                echo '<table class="table">';
-                while ($row = $result->fetch()) {
-                    echo '<tr><td><mark>';
-                    echo date('F jS, Y (g a)', strtotime($row['Date_time']));
-                    echo '</mark></td><td>';
-                    echo '<a href="/event/view?id='.$row['Event_id'].'">';
-                    echo $row['Name'].'</a>';
-                    echo '</td></tr>'."\n";
+                if ($result->rowCount() != 0) {
+                    echo '<table class="table">';
+                    while ($row = $result->fetch()) {
+                        echo '<tr><td><mark>';
+                        echo date('F jS, Y (g a)', strtotime($row['Date_time']));
+                        echo '</mark></td><td>';
+                        echo '<a href="/event/view?id='.$row['Event_id'].'">';
+                        echo $row['Name'].'</a>';
+                        echo '</td></tr>'."\n";
+                    }
+                    echo '</table>';
+                } else {
+                    echo '<p>No upcoming events.';
+                    echo ' <a href="/event/">Find new events</a>.</p>';
                 }
-                echo '</table>';
             ?>
         </div>
     </div>
