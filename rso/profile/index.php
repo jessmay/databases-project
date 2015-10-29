@@ -3,11 +3,9 @@
 	<title>RSO Profile Page</title>
 
 <?php include TEMPLATE_MIDDLE; 
-	// TODO 
-	// Button bug
-	// if rso is pending display?
 
 	$rso_id = $_GET['id'];
+	$url = $_SERVER['REQUEST_URI'];
 	
 	$user = $_SESSION['user'];
 	$user_id =$user['User_id'];
@@ -127,13 +125,14 @@
 				$rso_id,
 				$user_id
 			);
+			$user_can_join=false;
 		}
 	}
 	
 ?>
 
 <?php if($user_can_join): ?>
-	<form role="form" action"" method="post">
+	<form role="form" ="<?php echo $url; ?>" method="post">
 		<button type="submit" name="joinRSO" class="btn btn-primary">Join RSO</button>
 	</form>
 <?php endif; ?>
