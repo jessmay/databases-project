@@ -5,6 +5,7 @@ define('ROOT', __DIR__);
 define('TEMPLATE_TOP', ROOT.'/template/template_top.php');
 define('TEMPLATE_MIDDLE', ROOT.'/template/template_middle.php');
 define('TEMPLATE_BOTTOM', ROOT.'/template/template_bottom.php');
+define('TEMPLATE_MAP', ROOT.'/template/template_map.php');
 define('MUST_BE_ADMIN', ROOT.'/template/require_admin.php');
 define('MUST_BE_SUPER_ADMIN', ROOT.'/template/require_super_admin.php');
 // TODO: Set up login session code
