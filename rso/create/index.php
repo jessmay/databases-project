@@ -386,8 +386,7 @@
                 <div class="form-group">
                     <input type="email" class="form-control" id="member_email_4" name="member_email_4" placeholder="Email" size="50" maxlength="50" required value="<?=$member_email_4?>">
                 </div>
-            </div>
-            <button type="button" class="addMember btn btn-success btn-sm">Add Member</button><br><br><br>
+            </div><br>
             <?php endif; ?>
             
 			<button type="submit" name="createRSO" class="btn btn-primary">Submit</button>

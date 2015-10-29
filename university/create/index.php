@@ -2,11 +2,13 @@
 <?php include TEMPLATE_TOP; ?>
 	<title>Create University</title>
 
+<?php include MAP_FUNCTIONS; ?>
 <?php include TEMPLATE_MIDDLE;
     $status = 0;
     define('VALID_SUBMIT', 1);
     define('NAME_TAKEN', 2);
     define('USER_HAS_UNIVERSITY', 3);
+    define('INVALID_LOCATION', 4);
     
     define('DEFAULT_UNIVERSITY', 1);
     
@@ -29,7 +31,7 @@
         if ($univ_name_taken)
             return NAME_TAKEN;
         
-        // Check to see the user is already affliated with a university
+        // Check to see the user is already affiliated with a university
         $super_admin_id = $_SESSION['user']['User_id'];
         $find_user_university_params = array(
             ':super_admin_id' => $super_admin_id
@@ -91,18 +93,29 @@
             ->prepare($update_user_university_query)
             ->execute($update_user_university_params);
         
-        // TODO: Retrieve the latitude and longitude of the location
+        // Retrieve the latitude and longitude of the location
         $location_name = $name . ' ' . $location;
+        $search_lookup = lookup($location_name);
+        
+        if ($search_lookup['latitude'] == 'failed') {
+            return INVALID_LOCATION;
+        }
         
         // Insert the location into the Location table
         $create_location_params = array(
-            ':location_name' => $location_name
+            ':location_name' => $location_name,
+            ':latitude' => $search_lookup['latitude'],
+            ':longitude' => $search_lookup['longitude']
         );
         $create_location_query = '
             INSERT INTO Location (
-                Name
+                Name,
+                Latitude,
+                Longitude
             ) VALUES (
-                :location_name
+                :location_name,
+                :latitude,
+                :longitude
             )
         ';
         
@@ -239,10 +252,18 @@
 				<textarea class="form-control" id="description" name="description" rows="3" placeholder="Add more info" size="160" maxlength="160" required><?=$description?></textarea>
 			</div>
             
+            <?php if ($status == INVALID_LOCATION): ?>
+            <div class="form-group has-error">
+				<label for="location">Location</label>
+				<input type="text" class="form-control" id="location" name="location" placeholder="ex: Orlando, Florida" size="50" maxlength="50" required value="<?=$location?>">
+                <span id="invalidName" class="help-block">The university could not be located. Please enter a valid city and state.</span>
+			</div>
+            <?php else: ?>
             <div class="form-group">
 				<label for="location">Location</label>
 				<input type="text" class="form-control" id="location" name="location" placeholder="ex: Orlando, Florida" size="50" maxlength="50" required value="<?=$location?>">
-			</div>
+            </div>
+            <?php endif; ?>
             
             <div class="form-group">
 				<label for="picture_url">Picture</label>
@@ -265,4 +286,5 @@
 	</p>
     <?php endif; ?>
 
+<?php include TEMPLATE_MAP; ?>
 <?php include TEMPLATE_BOTTOM; ?>
