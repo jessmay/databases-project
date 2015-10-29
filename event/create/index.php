@@ -116,8 +116,27 @@
             ->prepare($create_event_query)
             ->execute($create_event_params);
         
-        // FInd the event_id from the Event table
+        // Find the event_id from the Event table
         $event_id = $db->lastInsertId();
+        
+        // Insert the relation into the University_Event table
+        $create_event_relation_params = array(
+            ':university_id' => $_SESSION['user']['University_id'],
+            'event_id' => $event_id
+        );
+        $create_event_relation_query = '
+            INSERT INTO University_Event (
+                University_id,
+                Event_id
+            ) VALUES (
+                :university_id,
+                :event_id
+            )
+        ';
+        
+        $result = $db
+            ->prepare($create_event_relation_query)
+            ->execute($create_event_relation_params);
         
         // TODO: Retrieve the latitude and longitude of the address
         
