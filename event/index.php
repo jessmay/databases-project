@@ -3,7 +3,13 @@
     <title>Find Event</title>
 
 <?php include TEMPLATE_MIDDLE; ?>
-
+    
+<!-- TODO:
+    1.)Implement the location results and Sort results in ascending order from distance away.
+    2.)Filter out all results restricted to RSO members
+    3.)If private, make sure to only allow memebers of the hosting university to see results. 
+    4.)Be sure not to include any events that are not approved by a super admin.
+ -->
     <h2>
         Find Event
     </h2>
@@ -23,18 +29,18 @@
         $Name = '%'.$search.'%';
         $search_string = htmlentities($search);
 
-        $search_query = "SELECT * 
+        $search_name = "SELECT * 
                 FROM Event E
                 WHERE E.Name like :name";
 
-        $rso_params = array(':name' => $Name);
-        $result = $db->prepare($search_query);
-        $result->execute($rso_params);
-        $number = $result->rowCount();
+        $event_name_params = array(':name' => $Name);
+        $result_name = $db->prepare($search_name);
+        $result_name->execute($event_name_params);
+        $number = $result_name->rowCount();
         
         echo "<h3><strong>$number result(s) found searching for '$search_string'. </strong></h3><hr><br>";
 
-        while($row = $result->fetch()){
+        while($row = $result_name->fetch()){
             $Name =$row['Name'];
             $ID = $row['Event_id'];
 

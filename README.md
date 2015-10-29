@@ -14,3 +14,4 @@
   - In php.ini, uncomment the following lines (remove the leading semicolon):
     - extension_dir = "ext"
     - extension=php_pdo_mysql.dll
+    - extension=php_curl.dll

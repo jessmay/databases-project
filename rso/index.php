@@ -28,13 +28,13 @@
                 WHERE R.Name like :name";
 
         $rso_params = array(':name' => $Name);
-        $result = $db->prepare($search_query);
-        $result->execute($rso_params);
-        $number = $result->rowCount();
+        $result_name= $db->prepare($search_query);
+        $result_name->execute($rso_params);
+        $number = $result_name->rowCount();
         
         echo "<h3><strong>$number result(s) found searching for '$search_string'. </strong></h3><hr><br>";
 
-        while($row = $result->fetch()){
+        while($row = $result_name->fetch()){
             $Name =$row['Name'];
             $ID = $row['RSO_id'];
 
