@@ -8,6 +8,7 @@ define('TEMPLATE_BOTTOM', ROOT.'/template/template_bottom.php');
 define('TEMPLATE_MAP', ROOT.'/template/template_map.php');
 define('MUST_BE_ADMIN', ROOT.'/template/require_admin.php');
 define('MUST_BE_SUPER_ADMIN', ROOT.'/template/require_super_admin.php');
+define('MAP_FUNCTIONS', ROOT.'/template/map_functions.php');
 // TODO: Set up login session code
 try {
     $db = new PDO(
