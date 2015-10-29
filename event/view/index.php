@@ -3,23 +3,45 @@
 	<title>Event View Page</title>
 
 <?php include TEMPLATE_MIDDLE;
-	// TODO verify user has permission to view this event
+	// TODO 
 	// RSO association with RSO event
-	// Verify user has no conflicts when signing up for event
-	// ratings - view average, view yours if exists
+	// ratings - view average, view yours if exists, stars
+	//location
+	
+	//Events: Type: 1 - Private; 2 - RSO; 3 - Public
 	
 	$user = $_SESSION['user'];
 	$user_id =$user['User_id'];
 	$event_id = $_GET['id'];
 	$url = $_SERVER['REQUEST_URI'];
 	
-	$participating = false;
+	$user_can_join = false;
 	$join_event_success=false;
 	$create_comment_success=false;
 	$create_rating_success=false;
 	$message="";
 	$rating=null;
+	
+	// Check if the user can join this event
+	$user_event_query = '
+		SELECT COUNT(*) AS userParticipating
+		FROM event_user EU
+		WHERE EU.Event_id = :event_id AND EU.User_id = :user_id
+	';
+	
+	$user_event_params = array(
+		':event_id' => $event_id,
+		':user_id' => $user_id
+	);
+	$user_event_results = $db->prepare($user_event_query);
+	$user_event_results->execute($user_event_params);
+	$user_event_row = $user_event_results->fetch();
+	
+	if($user_event_row['userParticipating'] == 0){
+		$user_can_join = true;
+	}
 
+	// Get event details
 	$event_query = '
 		SELECT *
 		FROM Event E
@@ -30,6 +52,34 @@
 	$result = $db->prepare($event_query);
 	$result->execute($event_params);
 	$row = $result->fetch();
+	
+	//Check if this is a private event
+	$event_type = $row['Type'];
+	if($event_type == 1){
+		// Get University hosting this event
+		$event_university_query = '
+			SELECT UE.University_id
+			FROM university_event UE
+			WHERE UE.Event_id = :event_id
+		';
+		$event_university_params = array(':event_id' => $event_id);
+		$event_university_result = $db->prepare($event_university_query);
+		$event_university_result->execute($event_university_params);
+		$event_university_row = $event_university_result->fetch();
+		$ni_id = $event_university_row['University_id'];
+		$u_id = $user['University_id'];
+		echo "<p>Enter private event redirect $ni_id - $u_id</p>";
+	
+		// Verify user can view this event, if not, redirect to home page
+		if($user['University_id'] == null || $user['University_id'] != $event_university_row['University_id']){
+			echo "<p>Enter private event redirect</p>";
+			 header('Location: /');
+			 exit();
+		}
+	}
+	else if($event_type == 2){ // TODO check against RSO
+	
+	}
 	
 	$event_name = $row['Name'];
 	$event_date_time = $row['Date_time'];
@@ -197,6 +247,7 @@
 				$event_id,
 				$user_id
 			);
+			$user_can_join = false;
 		}
 		elseif(isset($_POST['createComment'])) {
             $create_comment_success = tryPostComment(
@@ -287,9 +338,11 @@
 	</form>
 </p>
 
-<form role="form" action"" method="post">
-	<button type="submit" name="joinEvent" class="btn btn-primary">Join Event</button>
-</form>
+<?php if($user_can_join): ?>
+	<form role="form" action="<?php echo $url; ?>" method="post">
+		<button type="submit" name="joinEvent" class="btn btn-primary">Join Event</button>
+	</form>
+<?php endif; ?>
 
 <a class="facebook-share-button" href="https://www.facebook.com/sharer.php?u=<?php echo urlencode($url); ?>">Share on Facebook</a>
 	
