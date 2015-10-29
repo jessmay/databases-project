@@ -16,9 +16,13 @@
     define('VALID_SUBMIT', 1);
     define('RSO_TAKEN', 2);
     define('INVALID_ADMIN', 3);
-    define('NOT_ALL_UNIQUE', 4);
-    define('NOT_ALL_VALID', 5);
-    define('NOT_ALL_SAME_DOMAIN', 6);
+    define('ADMIN_MISSING_UNIVERSITY', 4);
+    define('NOT_ALL_UNIQUE', 5);
+    define('NOT_ALL_VALID', 6);
+    define('NOT_ALL_SAME_UNIVERSITY', 7);
+    define('NOT_ALL_SAME_DOMAIN', 8);
+    
+    define('DEFAULT_UNIVERSITY', 1);
     
     function checkInvalidEmail($db, $email) {
         $email = strtolower($email);
@@ -63,6 +67,11 @@
         $admin_id = $row['User_id'];
         $university_id = $row['University_id'];
         
+        // Check to see ensure the admin is enrolled in a university
+        if ($university_id == DEFAULT_UNIVERSITY) {
+            return ADMIN_MISSING_UNIVERSITY;
+        }
+        
         // Check to see if there is an existing RSO with that name in the university
         $name_used_params = array(
             ':name' => $name,
@@ -90,24 +99,31 @@
         if (count($member_emails_temp) != $total_members)
             return NOT_ALL_UNIQUE;
         
-        // Check that each member is a valid, existing user
+        // Check that each member is a valid, existing user enrolled in the same university
         $member_user_ids = array($admin_id);
         foreach ($member_emails as $member_email) {
             $find_user_params = array(
                 ':member_email' => $member_email
             );
             $find_user_query = '
-                SELECT User_id
+                SELECT User_id, University_id
                 FROM User U
                 WHERE U.Email = :member_email
             ';
             
             $result = $db->prepare($find_user_query);
             $result->execute($find_user_params);
-            $user_id = $result->fetch()['User_id'];
+            
+            $row = $result->fetch();
+            $user_id = $row['User_id'];
+            $member_university_id = $row['University_id'];
             
             if ($user_id == '') {
                 return NOT_ALL_VALID;
+            }
+            
+            if ($member_university_id == '' || $member_university_id != $university_id) {
+                return NOT_ALL_SAME_UNIVERSITY;
             }
             
             array_push($member_user_ids, $user_id);
@@ -270,6 +286,12 @@
                 <input type="email" class="form-control" id="admin_email" name="admin_email" placeholder="ex: rsoAdmin@university.edu" size="50" maxlength="50" required value="<?=$admin_email?>">
                 <span id="invalid_admin" class="help-block">Please enter an existing user email.</span>
             </div>
+            <?php elseif ($status == ADMIN_MISSING_UNIVERSITY): ?>
+            <div class="form-group has-error">
+                <label for="admin_email">Admin Email</label>
+                <input type="email" class="form-control" id="admin_email" name="admin_email" placeholder="ex: rsoAdmin@university.edu" size="50" maxlength="50" required value="<?=$admin_email?>">
+                <span id="invalid_admin" class="help-block">Please join or create an existing university.</span>
+            </div>
             <?php else: ?>
             <div class="form-group">
                 <label for="admin_email">Admin Email</label>
@@ -299,6 +321,24 @@
             <div class="has-error" id="member_list">
                 <label class="text-danger">List of Members</label>
                 <span id="not_all_unique" class="help-block">Please ensure all emails belong to valid users.</span>
+                <div class="form-group">
+                    <input type="email" class="form-control" id="member_email_1" name="member_email_1" placeholder="Email" size="50" maxlength="50" required value="<?=$member_email_1?>">
+                </div>
+                <div class="form-group">
+                    <input type="email" class="form-control" id="member_email_2" name="member_email_2" placeholder="Email" size="50" maxlength="50" required value="<?=$member_email_2?>">
+                </div>
+                <div class="form-group">
+                    <input type="email" class="form-control" id="member_email_3" name="member_email_3" placeholder="Email" size="50" maxlength="50" required value="<?=$member_email_3?>">
+                </div>
+                <div class="form-group">
+                    <input type="email" class="form-control" id="member_email_4" name="member_email_4" placeholder="Email" size="50" maxlength="50" required value="<?=$member_email_4?>">
+                </div>
+            </div>
+            <button type="button" class="addMember btn btn-success btn-sm">Add Member</button><br><br><br>
+            <?php elseif ($status == NOT_ALL_SAME_UNIVERSITY): ?>
+            <div class="has-error" id="member_list">
+                <label class="text-danger">List of Members</label>
+                <span id="not_all_unique" class="help-block">Please ensure all users belong to the same university as the entered Admin.</span>
                 <div class="form-group">
                     <input type="email" class="form-control" id="member_email_1" name="member_email_1" placeholder="Email" size="50" maxlength="50" required value="<?=$member_email_1?>">
                 </div>
