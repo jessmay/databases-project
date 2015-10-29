@@ -17,6 +17,8 @@
     define('RSO_TAKEN', 2);
     define('INVALID_ADMIN', 3);
     define('NOT_ALL_UNIQUE', 4);
+    define('NOT_ALL_VALID', 5);
+    define('NOT_ALL_SAME_DOMAIN', 6);
     
     function checkInvalidEmail($db, $email) {
         $email = strtolower($email);
@@ -79,7 +81,6 @@
             return RSO_TAKEN;
         
         // Add the extra members into the list of emails
-        // TODO LATER: INSERT RSO_USER INFO
         
         // Check to ensure all emails are unique and not the same as the admin_email
         $total_members = count($member_emails) + 1;
@@ -89,8 +90,38 @@
         if (count($member_emails_temp) != $total_members)
             return NOT_ALL_UNIQUE;
         
-        // Check users are valid
-                
+        // Check that each member is a valid, existing user
+        $member_user_ids = array($admin_id);
+        foreach ($member_emails as $member_email) {
+            $find_user_params = array(
+                ':member_email' => $member_email
+            );
+            $find_user_query = '
+                SELECT User_id
+                FROM User U
+                WHERE U.Email = :member_email
+            ';
+            
+            $result = $db->prepare($find_user_query);
+            $result->execute($find_user_params);
+            $user_id = $result->fetch()['User_id'];
+            
+            if ($user_id == '') {
+                return NOT_ALL_VALID;
+            }
+            
+            array_push($member_user_ids, $user_id);
+        }
+        
+        // Check that all members have the same email domain as the admin
+        list($admin_username, $admin_email_domain) = explode('@', $admin_email);
+        foreach ($member_emails as $member_email) {
+            list($member_username, $member_email_domain) = explode('@', $member_email);
+            if ($member_email_domain != $admin_email_domain) {
+                return NOT_ALL_SAME_DOMAIN;
+            }
+        }
+        
         // Promote the user type into an admin user-type if applicable (i.e. just a user)
         $find_user_type_params = array(
             ':admin_id' => $admin_id
@@ -160,6 +191,28 @@
         $result = $db
             ->prepare($create_rso_relation_query)
             ->execute($create_rso_relation_params);
+        
+        // Insert the relations into the RSO_User table
+        foreach ($member_user_ids as $member_user_id) {
+            $create_user_relation_params = array(
+                ':rso_id' => $rso_id,
+                ':member_user_id' => $member_user_id
+            );
+            $create_user_relation_query = '
+                INSERT INTO RSO_User (
+                    RSO_id,
+                    User_id
+                ) VALUES (
+                    :rso_id,
+                    :member_user_id
+                )
+            ';
+            
+            $result = $db
+                ->prepare($create_user_relation_query)
+                ->execute($create_user_relation_params);
+        }
+        
         return VALID_SUBMIT;
     }
     
@@ -228,6 +281,42 @@
             <div class="has-error" id="member_list">
                 <label class="text-danger">List of Members</label>
                 <span id="not_all_unique" class="help-block">Please enter unique user email addresses.</span>
+                <div class="form-group">
+                    <input type="email" class="form-control" id="member_email_1" name="member_email_1" placeholder="Email" size="50" maxlength="50" required value="<?=$member_email_1?>">
+                </div>
+                <div class="form-group">
+                    <input type="email" class="form-control" id="member_email_2" name="member_email_2" placeholder="Email" size="50" maxlength="50" required value="<?=$member_email_2?>">
+                </div>
+                <div class="form-group">
+                    <input type="email" class="form-control" id="member_email_3" name="member_email_3" placeholder="Email" size="50" maxlength="50" required value="<?=$member_email_3?>">
+                </div>
+                <div class="form-group">
+                    <input type="email" class="form-control" id="member_email_4" name="member_email_4" placeholder="Email" size="50" maxlength="50" required value="<?=$member_email_4?>">
+                </div>
+            </div>
+            <button type="button" class="addMember btn btn-success btn-sm">Add Member</button><br><br><br>
+            <?php elseif ($status == NOT_ALL_VALID): ?>
+            <div class="has-error" id="member_list">
+                <label class="text-danger">List of Members</label>
+                <span id="not_all_unique" class="help-block">Please ensure all emails belong to valid users.</span>
+                <div class="form-group">
+                    <input type="email" class="form-control" id="member_email_1" name="member_email_1" placeholder="Email" size="50" maxlength="50" required value="<?=$member_email_1?>">
+                </div>
+                <div class="form-group">
+                    <input type="email" class="form-control" id="member_email_2" name="member_email_2" placeholder="Email" size="50" maxlength="50" required value="<?=$member_email_2?>">
+                </div>
+                <div class="form-group">
+                    <input type="email" class="form-control" id="member_email_3" name="member_email_3" placeholder="Email" size="50" maxlength="50" required value="<?=$member_email_3?>">
+                </div>
+                <div class="form-group">
+                    <input type="email" class="form-control" id="member_email_4" name="member_email_4" placeholder="Email" size="50" maxlength="50" required value="<?=$member_email_4?>">
+                </div>
+            </div>
+            <button type="button" class="addMember btn btn-success btn-sm">Add Member</button><br><br><br>
+            <?php elseif ($status == NOT_ALL_SAME_DOMAIN): ?>
+            <div class="has-error" id="member_list">
+                <label class="text-danger">List of Members</label>
+                <span id="not_all_unique" class="help-block">Please ensure all emails share the same domain as the entered Admin email.</span>
                 <div class="form-group">
                     <input type="email" class="form-control" id="member_email_1" name="member_email_1" placeholder="Email" size="50" maxlength="50" required value="<?=$member_email_1?>">
                 </div>
