@@ -68,6 +68,7 @@ CREATE TABLE IF NOT EXISTS Comment (
 CREATE TABLE IF NOT EXISTS Event (
     Event_id      INTEGER NOT NULL AUTO_INCREMENT,
     Admin_id      INTEGER NOT NULL,
+    RSO_id        INTEGER,
     Category_id   INTEGER NOT NULL,
     Date_time     DATETIME,
     Name          CHAR(50),
@@ -78,6 +79,7 @@ CREATE TABLE IF NOT EXISTS Event (
     Approved      BOOL,
     PRIMARY KEY (Event_id),
     FOREIGN KEY (Admin_id) REFERENCES User (User_id),
+    FOREIGN KEY (RSO_id) REFERENCES RSO (RSO_id),
     FOREIGN KEY (Category_id) REFERENCES Category (Category_id)
 );
 

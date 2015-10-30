@@ -54,12 +54,15 @@
     define('VALID_SUBMIT_PENDING_APPROVAL', 2);
     define('INVALID_LOCATION', 3);
     define('CONFLICT', 4);
+    define('MISSING_RSO', 5);
+    define('UNNEEDED_RSO', 6);
+    define('WRONG_RSO', 7);
     
     define('PRIVATE_EVENT', 1);
     define('RSO_EVENT', 2);
     define('PUBLIC_EVENT', 3);
     
-    function tryCreateEvent($db, $name, $category_id, $description, $location, $building, $room_number, $address, $event_date, $event_time, $event_type, $contact_email, $contact_phone) {
+    function tryCreateEvent($db, $name, $category_id, $description, $location, $room_number, $address, $event_date, $event_time, $event_type, $contact_email, $contact_phone, $rso_id) {
         $admin_id = $_SESSION['user']['User_id'];   // Only Admins or Super-Admins can see the form
         
         // If the event is an RSO event, then approval from the super-admin isn't needed
@@ -83,9 +86,35 @@
         }
         
         // TODO: Check to see if there is an existing event with the same date, time, and place
-        // This can be done by searching the address, getting the id, and comparing the id
-        // Will have to add another column into the Location table
-    
+        
+        // Check the user correctly submitted an RSO to be associated with the event if applicable
+        if ($rso_id == 'Not Applicable' && $event_type == RSO_EVENT) {
+            return MISSING_RSO;
+        }
+        if ($rso_id != 'Not Applicable' && $event_type != RSO_EVENT) {
+            return UNNEEDED_RSO;
+        }
+        
+        if ($rso_id != 'Not Applicable' && $event_type == RSO_EVENT) {
+            $find_rso_params = array(
+                ':rso_id' => $rso_id,
+                ':admin_id' => $admin_id
+            );
+            $find_rso_query = '
+                SELECT COUNT(*)
+                FROM RSO R
+                WHERE (R.RSO_id = :rso_id) AND (R.Admin_id = :admin_id)
+            ';
+            
+            $result = $db->prepare($find_rso_query);
+            $result->execute($find_rso_params);
+            $admin_of_rso = $result->fetchColumn();
+            
+            if (!$admin_of_rso) {
+                return WRONG_RSO;
+            }
+        }
+        
         // Insert the event information into the Event table
         $create_event_params = array(
             ':admin_id' => $admin_id,
@@ -129,6 +158,23 @@
         // Find the event_id from the Event table
         $event_id = $db->lastInsertId();
         
+        // Update the rso_id from a NULL value if applicable to the Event table
+        if ($rso_id != 'Not Applicable') {
+            $update_rso_id_params = array(
+                ':event_id' => $event_id,
+                ':rso_id' => $rso_id
+            );
+            $update_rso_id_query = '
+                UPDATE Event
+                SET RSO_id = :rso_id
+                WHERE Event_id = :event_id
+            ';
+            
+            $result = $db
+                ->prepare($update_rso_id_query)
+                ->execute($update_rso_id_params);
+        }
+        
         // Insert the relation into the University_Event table
         $create_event_relation_params = array(
             ':university_id' => $_SESSION['user']['University_id'],
@@ -149,11 +195,9 @@
             ->execute($create_event_relation_params);
         
         // Create the location name to be stored into the Location table
-        $location_name = $location . ' at ';
-        if ($building != '')
-            $location_name .= $building . ' at ';
         if ($room_number != '')
-            $location_name .= ' Room ' . $room_number . ' at ';
+            $location_name = $room_number . ' at ';
+        $location_name = $location . ' at ';
         $location_name .= $address;
         
         // Insert the location into the Location table
@@ -215,14 +259,14 @@
                 $_POST['category_id'],
                 $_POST['description'],
                 $_POST['location'],
-                $_POST['building'],
                 $_POST['room_number'],
                 $_POST['address'],
                 $_POST['event_date'],
                 $_POST['event_time'],
                 $_POST['event_type'],
                 $_POST['contact_email'],
-                $_POST['contact_phone']
+                $_POST['contact_phone'],
+                $_POST['rso_id']
             );
             $event_type_submit = $_POST['event_type'];
         }
@@ -239,7 +283,6 @@
         $category_id = ($status == 0) ? '' : htmlentities($_POST['category_id']);
         $description = ($status == 0) ? '' : htmlentities($_POST['description']);
         $location = ($status == 0) ? '' : htmlentities($_POST['location']);
-        $building = ($status == 0) ? '' : htmlentities($_POST['building']);
         $room_number = ($status == 0) ? '' : htmlentities($_POST['room_number']);
         $address = ($status == 0) ? '' : htmlentities($_POST['address']);
         $event_date = ($status == 0) ? '' : htmlentities($_POST['event_date']);
@@ -247,6 +290,7 @@
         $event_type = ($status == 0) ? '3' : htmlentities($_POST['event_type']);
         $contact_email = ($status == 0) ? '' : htmlentities($_POST['contact_email']);
         $contact_phone = ($status == 0) ? '' : htmlentities($_POST['contact_phone']);
+        $rso_id = ($status == 0) ? '' : htmlentities($_POST['rso_id']);
     ?>
 	<p>
 		<form role="form" action="" method="post">
@@ -257,25 +301,23 @@
 						<input type="text" class="form-control" id="name" name="name" placeholder="ex: Career Expo" size="50" maxlength="50" required value="<?=$name?>">
 					</div>
 				</div>
-				<div class="col-md-6">
-					<div class="form-group">
-						<label for="category">Category</label>
-						<select class="form-control" name="category_id">
-                            <?php
-                                $get_category_query = '
-                                    SELECT C.Category_id, C.Name
-                                    FROM Category C
-                                ';
-                                $result = $db->prepare($get_category_query);
-                                $result->execute();
-                                while ($res = $result->fetch()) {
-                                    echo '<option value="'.$res['Category_id'].'">';
-                                    echo $res['Name'];
-                                    echo '</option>'.PHP_EOL;
-                                }
-                            ?>
-						</select>
-					</div>
+				<div class="col-md-6 form-group">
+                    <label for="category">Category</label>
+                    <select class="form-control" name="category_id">
+                        <?php
+                            $get_category_query = '
+                                SELECT C.Category_id, C.Name
+                                FROM Category C
+                            ';
+                            $result = $db->prepare($get_category_query);
+                            $result->execute();
+                            while ($res = $result->fetch()) {
+                                echo '<option value="'.$res['Category_id'].'">';
+                                echo $res['Name'];
+                                echo '</option>'.PHP_EOL;
+                            }
+                        ?>
+                    </select>
 				</div>
 			</div>
 			
@@ -288,21 +330,17 @@
             <div class="row">
                 <div class="col-md-5 form-group">
                     <label for="location" style="font-size:small">Where</label>
-                    <input type="text" class="form-control" id="location" name="location" placeholder="ex: Domino's Pizza" size="30" maxlength="30" required value="<?=$location?>">
+                    <input type="text" class="form-control" id="location" name="location" placeholder="ex: Student Union" size="30" maxlength="30" required value="<?=$location?>">
                 </div>
-                <div class="col-md-4 form-group">
-                    <label for="building" style="font-size:small">Building Name</label> <i>(optional)</i>
-                    <input type="text" class="form-control" id="building" name="building" placeholder="ex: Student Union" size="30" maxlength="30" value="<?=$building?>">
-                </div>
-                <div class="col-md-3 form-group">
-                    <label for="room_number" style="font-size:small">Room Number</label> <i>(optional)</i>
-                    <input type="text" class="form-control" id="room_number" name="room_number" placeholder="ex: 203" size="10" maxlength="10" value="<?=$room_number?>">
+                <div class="col-md-5 form-group">
+                    <label for="room_number" style="font-size:small">Meeting Place</label> <i>(optional)</i>
+                    <input type="text" class="form-control" id="room_number" name="room_number" placeholder="ex: Domino's Pizza or 203" size="30" maxlength="30" value="<?=$room_number?>">
                 </div>
             </div>
             <?php if ($status == INVALID_LOCATION): ?>
             <div class="form-group has-error">
                     <label for="address" style="font-size:small">Address</label>
-                    <input type="text" class="form-control" id="address" name="address" placeholder="ex: 12715 Pegasus Dr, Orlando, FL 32816" size="50" maxlength="50" required value="<?=$address?>">
+                    <input type="text" class="form-control" id="address" name="address" placeholder="ex: 12715 Pegasus Dr, Orlando, FL 32816" size="100" maxlength="100" required value="<?=$address?>">
                     <span id="invalid_location" class="help-block">This address could not be located. Please enter a valid address.</span>
             </div>
             <?php else: ?>
@@ -348,6 +386,106 @@
 					<label for="contact_phone">Contact Phone</label>
 					<input type="tel" class="form-control" id="contact_phone" name="contact_phone" placeholder="ex: 1234567890" pattern="[0-9]{10,11}" size="11" maxlength="11" required value="<?=$contact_phone?>">
 				</div>
+                <?php if ($status == MISSING_RSO): ?>
+                <div class="col-md-4 form-group has-error">
+                    <label for="category">RSO</label>
+                    <select class="form-control" name="rso_id">
+                        <?php
+                            $get_rso_params = array(
+                                ':admin_id' => $_SESSION['user']['User_id']
+                            );
+                            $get_rso_query = '
+                                SELECT R.RSO_id, R.Name
+                                FROM RSO R
+                                WHERE R.Admin_id = :admin_id
+                            ';
+                            $result = $db->prepare($get_rso_query);
+                            $result->execute($get_rso_params);
+                            echo '<option>Not Applicable</option>';
+                            while ($res = $result->fetch()) {
+                                echo '<option value="'.$res['RSO_id'].'">';
+                                echo $res['Name'];
+                                echo '</option>'.PHP_EOL;
+                            }
+                        ?>
+                    </select>
+                    <span id="missing_rso" class="help-block">Please select an RSO associated with this RSO event.</span>
+                </div>
+                <?php elseif ($status == UNNEEDED_RSO): ?>
+                <div class="col-md-4 form-group has-error">
+                    <label for="category">RSO</label>
+                    <select class="form-control" name="rso_id">
+                        <?php
+                            $get_rso_params = array(
+                                ':admin_id' => $_SESSION['user']['User_id']
+                            );
+                            $get_rso_query = '
+                                SELECT R.RSO_id, R.Name
+                                FROM RSO R
+                                WHERE R.Admin_id = :admin_id
+                            ';
+                            $result = $db->prepare($get_rso_query);
+                            $result->execute($get_rso_params);
+                            echo '<option>Not Applicable</option>';
+                            while ($res = $result->fetch()) {
+                                echo '<option value="'.$res['RSO_id'].'">';
+                                echo $res['Name'];
+                                echo '</option>'.PHP_EOL;
+                            }
+                        ?>
+                    </select>
+                    <span id="unneeded_rso" class="help-block">Please select "Not Applicable" for Public and Private events.</span>
+                </div>
+                <?php elseif ($status == WRONG_RSO): ?>
+                <div class="col-md-4 form-group has-error">
+                    <label for="category">RSO</label>
+                    <select class="form-control" name="rso_id">
+                        <?php
+                            $get_rso_params = array(
+                                ':admin_id' => $_SESSION['user']['User_id']
+                            );
+                            $get_rso_query = '
+                                SELECT R.RSO_id, R.Name
+                                FROM RSO R
+                                WHERE R.Admin_id = :admin_id
+                            ';
+                            $result = $db->prepare($get_rso_query);
+                            $result->execute($get_rso_params);
+                            echo '<option>Not Applicable</option>';
+                            while ($res = $result->fetch()) {
+                                echo '<option value="'.$res['RSO_id'].'">';
+                                echo $res['Name'];
+                                echo '</option>'.PHP_EOL;
+                            }
+                        ?>
+                    </select>
+                    <span id="wrong_rso" class="help-block">Please select an RSO you are an admin of for the RSO event.</span>
+                </div>
+                <?php else: ?>
+                <div class="col-md-4 form-group">
+                    <label for="category">RSO</label>
+                    <select class="form-control" name="rso_id">
+                        <?php
+                            $get_rso_params = array(
+                                ':admin_id' => $_SESSION['user']['User_id']
+                            );
+                            $get_rso_query = '
+                                SELECT R.RSO_id, R.Name
+                                FROM RSO R
+                                WHERE R.Admin_id = :admin_id
+                            ';
+                            $result = $db->prepare($get_rso_query);
+                            $result->execute($get_rso_params);
+                            echo '<option>Not Applicable</option>';
+                            while ($res = $result->fetch()) {
+                                echo '<option value="'.$res['RSO_id'].'">';
+                                echo $res['Name'];
+                                echo '</option>'.PHP_EOL;
+                            }
+                        ?>
+                    </select>
+                </div>
+                <?php endif; ?>
 			</div><br>
 			
 			<button type="submit" name="createEvent" class="btn btn-primary">Submit</button>
