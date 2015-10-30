@@ -103,7 +103,7 @@
         
         // Insert the location into the Location table
         $create_location_params = array(
-            ':location_name' => $location_name,
+            ':location' => $location,
             ':latitude' => $search_lookup['latitude'],
             ':longitude' => $search_lookup['longitude']
         );
@@ -113,7 +113,7 @@
                 Latitude,
                 Longitude
             ) VALUES (
-                :location_name,
+                :location,
                 :latitude,
                 :longitude
             )
@@ -224,13 +224,13 @@
 					<div class="form-group has-error">
 						<label class="control-label" for="name">Name</label>
                         <input type="text" class="form-control" id="name" name="name" placeholder="ex: University of Central Florida (UCF)" size="50" maxlength="50" required value="<?=$name?>">
-                        <span id="invalidName" class="help-block">This university has already been created.</span>
+                        <span id="invalid_name" class="help-block">This university has already been created.</span>
                     </div>
                     <?php elseif ($status == USER_HAS_UNIVERSITY): ?>
                     <div class="form-group has-error">
 						<label class="control-label" for="name">Name</label>
                         <input type="text" class="form-control" id="name" name="name" placeholder="ex: University of Central Florida (UCF)" size="50" maxlength="50" required value="<?=$name?>">
-                        <span id="invalidName" class="help-block">You are already affiliated with a university.</span>
+                        <span id="invalid_name" class="help-block">You are already affiliated with a university.</span>
                     </div>
                     <?php else: ?>
 					<div class="form-group">
@@ -256,7 +256,7 @@
             <div class="form-group has-error">
 				<label for="location">Location</label>
 				<input type="text" class="form-control" id="location" name="location" placeholder="ex: Orlando, Florida" size="50" maxlength="50" required value="<?=$location?>">
-                <span id="invalidName" class="help-block">The university could not be located. Please enter a valid city and state.</span>
+                <span id="invalid_location" class="help-block">The university could not be located. Please enter a valid city and state.</span>
 			</div>
             <?php else: ?>
             <div class="form-group">

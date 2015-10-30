@@ -47,10 +47,13 @@
 		});
 	</script>
 
+<?php include MAP_FUNCTIONS; ?>
 <?php include TEMPLATE_MIDDLE;
-    $success = false;
-    $conflict = false;
-    $event_type_submit = 0;
+    $status = 0;
+    define('VALID_SUBMIT_APPROVED', 1);
+    define('VALID_SUBMIT_PENDING_APPROVAL', 2);
+    define('INVALID_LOCATION', 3);
+    define('CONFLICT', 4);
     
     define('PRIVATE_EVENT', 1);
     define('RSO_EVENT', 2);
@@ -61,7 +64,7 @@
         
         // If the event is an RSO event, then approval from the super-admin isn't needed
         $approved = 0;
-        if ($event_type == RSO_EVENT)
+        if ($event_type == RSO_EVENT || $_SESSION['user']['Type'] == 3)
         {
             $approved = 1;
         }
@@ -71,6 +74,13 @@
         list($hour, $dayType) = explode(' ', $event_time);
         $hour = ($hour != 12 && $dayType == "PM") ? $hour + 12 : $hour;
         $date_time = $year . '-' . $month . '-' . $day . ' ' . $hour . ':00:00';
+        
+        // Retrieve the latitude and longitude of the address
+        $search_lookup = lookup($address);
+        
+        if ($search_lookup['latitude'] == 'failed' ) {
+            return INVALID_LOCATION;
+        }
         
         // TODO: Check to see if there is an existing event with the same date, time, and place
         // This can be done by searching the address, getting the id, and comparing the id
@@ -138,8 +148,6 @@
             ->prepare($create_event_relation_query)
             ->execute($create_event_relation_params);
         
-        // TODO: Retrieve the latitude and longitude of the address
-        
         // Create the location name to be stored into the Location table
         $location_name = $location . ' at ';
         if ($building != '')
@@ -150,13 +158,19 @@
         
         // Insert the location into the Location table
         $create_location_params = array(
-            ':location_name' => $location_name
+            ':location_name' => $location_name,
+            ':latitude' => $search_lookup['latitude'],
+            ':longitude' => $search_lookup['longitude']
         );
         $create_location_query = '
             INSERT INTO Location (
-                Name
+                Name,
+                Latitude,
+                Longitude
             ) VALUES (
-                :location_name
+                :location_name,
+                :latitude,
+                :longitude
             )
         ';
         
@@ -185,13 +199,17 @@
         $result = $db
             ->prepare($create_location_relation_query)
             ->execute($create_location_relation_params);
-        return true;
+        
+        if ($approved) {
+            return VALID_SUBMIT_APPROVED;
+        }
+        return VALID_SUBMIT_PENDING_APPROVAL;
     }
     
     // If the user has submitted the form to create an event
     if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         if (isset($_POST['createEvent'])) {
-            $success = tryCreateEvent(
+            $status = tryCreateEvent(
                 $db,
                 $_POST['name'],
                 $_POST['category_id'],
@@ -206,30 +224,29 @@
                 $_POST['contact_email'],
                 $_POST['contact_phone']
             );
-            $conflict = !$success;
             $event_type_submit = $_POST['event_type'];
         }
     }
 ?>
 
-    <?php if (!$success): ?>
+    <?php if ($status != VALID_SUBMIT_APPROVED && $status != VALID_SUBMIT_PENDING_APPROVAL): ?>
     <h2>
         Create Event
     </h2>
     <hr>
     <?php
-        $name = $conflict ? htmlentities($_POST['name']) : '';
-        $category_id = $conflict ? htmlentities($_POST['category_id']) : '';
-        $description = $conflict ? htmlentities($_POST['description']) : '';
-        $location = $conflict ? htmlentities($_POST['location']) : '';
-        $building = $conflict ? htmlentities($_POST['building']) : '';
-        $room_number = $conflict ? htmlentities($_POST['room_number']) : '';
-        $address = $conflict ? htmlentities($_POST['address']) : '';
-        $event_date = $conflict ? htmlentities($_POST['event_date']) : '';
-        $event_time = $conflict ? htmlentities($_POST['event_time']) : '12 PM';
-        $event_type = $conflict ? htmlentities($_POST['event_type']) : '3';
-        $contact_email = $conflict ? htmlentities($_POST['contact_email']) : '';
-        $contact_phone = $conflict ? htmlentities($_POST['contact_phone']) : '';
+        $name = ($status == 0) ? '' : htmlentities($_POST['name']);
+        $category_id = ($status == 0) ? '' : htmlentities($_POST['category_id']);
+        $description = ($status == 0) ? '' : htmlentities($_POST['description']);
+        $location = ($status == 0) ? '' : htmlentities($_POST['location']);
+        $building = ($status == 0) ? '' : htmlentities($_POST['building']);
+        $room_number = ($status == 0) ? '' : htmlentities($_POST['room_number']);
+        $address = ($status == 0) ? '' : htmlentities($_POST['address']);
+        $event_date = ($status == 0) ? '' : htmlentities($_POST['event_date']);
+        $event_time = ($status == 0) ? '12 PM' : htmlentities($_POST['event_time']);
+        $event_type = ($status == 0) ? '3' : htmlentities($_POST['event_type']);
+        $contact_email = ($status == 0) ? '' : htmlentities($_POST['contact_email']);
+        $contact_phone = ($status == 0) ? '' : htmlentities($_POST['contact_phone']);
     ?>
 	<p>
 		<form role="form" action="" method="post">
@@ -282,10 +299,18 @@
                     <input type="text" class="form-control" id="room_number" name="room_number" placeholder="ex: 203" size="10" maxlength="10" value="<?=$room_number?>">
                 </div>
             </div>
+            <?php if ($status == INVALID_LOCATION): ?>
+            <div class="form-group has-error">
+                    <label for="address" style="font-size:small">Address</label>
+                    <input type="text" class="form-control" id="address" name="address" placeholder="ex: 12715 Pegasus Dr, Orlando, FL 32816" size="50" maxlength="50" required value="<?=$address?>">
+                    <span id="invalid_location" class="help-block">This address could not be located. Please enter a valid address.</span>
+            </div>
+            <?php else: ?>
             <div class="form-group">
                     <label for="address" style="font-size:small">Address</label>
                     <input type="text" class="form-control" id="address" name="address" placeholder="ex: 12715 Pegasus Dr, Orlando, FL 32816" size="50" maxlength="50" required value="<?=$address?>">
             </div>
+            <?php endif; ?>
 			
 			<div class="row">
 				<div class="col-md-4 form-group">
@@ -328,23 +353,29 @@
 			<button type="submit" name="createEvent" class="btn btn-primary">Submit</button>
 		</form>
 	</p>
+    <?php elseif ($status == VALID_SUBMIT_APPROVED): ?>
+    <h2>
+        Submitted Form
+    </h2>
+    <hr>
+        <p>
+            The event has been created.
+        </p>
+    <p>
+        <a href="/event/create">Return to Form</a>
+    </p>
     <?php else: ?>
     <h2>
         Submitted Form
     </h2>
     <hr>
-        <?php if ($event_type_submit == RSO_EVENT): ?>
-        <p>
-            The event has been created.
-        </p>
-        <?php else: ?>
         <p>
             The event is pending approval.
         </p>
-        <?php endif; ?>
     <p>
         <a href="/event/create">Return to Form</a>
     </p>
     <?php endif; ?>
 
+<?php include TEMPLATE_MAP; ?>
 <?php include TEMPLATE_BOTTOM; ?>
