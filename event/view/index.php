@@ -5,8 +5,7 @@
 <?php include TEMPLATE_MIDDLE;
 	// TODO 
 	// RSO association with RSO event
-	// ratings - view average, view yours if exists, stars
-	//location
+	// ratings - stars
 	
 	//Events: Type: 1 - Private; 2 - RSO; 3 - Public
 	
@@ -85,7 +84,7 @@
 	$event_date_time = $row['Date_time'];
 	
 	$location_query = '
-		SELECT L.Name
+		SELECT L.Name, L.Latitude, L.Longitude
 		FROM location L, event_location EL
 		WHERE EL.Event_id = :id AND EL.Location_id = L.Location_id
 	';
@@ -93,10 +92,14 @@
 	$location_result->execute($event_params);
 	$location_row = $location_result->fetch();
 	$event_location = $location_row['Name'];
+	$event_latitude = $location_row['Latitude'];
+	$event_longitude = $location_row['Longitude'];
 
 	echo "<h2>$event_name</h2>
 	<h4>$event_date_time, $event_location</h4>
 	<hr>";
+	
+	echo "<img src='http://maps.googleapis.com/maps/api/staticmap?center=$event_latitude,+$event_longitude&zoom=15&scale=false&size=300x300&maptype=roadmap&format=png&visual_refresh=true&markers=size:mid%7Ccolor:0xff0000%7Clabel:1%7C$event_latitude,+$event_longitude'>";
 	
 	$cat_id = $row['Category_id'];
 	$category_query = '

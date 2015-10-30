@@ -4,6 +4,8 @@
 
 <?php include TEMPLATE_MIDDLE; 
 
+	// todo make sure user goes to same university as admin
+
 	$rso_id = $_GET['id'];
 	$url = $_SERVER['REQUEST_URI'];
 	

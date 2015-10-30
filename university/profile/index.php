@@ -4,7 +4,7 @@
 
 <?php include TEMPLATE_MIDDLE; 
 
-	//TODO Button bug
+	$url = $_SERVER['REQUEST_URI'];
 	
 	$university_id = $_GET['id'];
 	
@@ -51,15 +51,15 @@
 	
 	$picture_result = $db->prepare($picture_query);
 	$picture_result->execute($university_params);
-	while($picture_row = $picture_result->fetch()){
-		$university_picture = $picture_row['Url'];
-		echo "<img src='$university_picture' class='img-thumbnail' width=100 height=100>";
-	}
+	$picture_row = $picture_result->fetch();
+	$university_picture = $picture_row['Url'];
+	echo "<img src='$university_picture' class='img-thumbnail' width=100 height=100>";
+	
 	
 	$university_name = $row['Name'];
 	
 	$location_query = '
-		SELECT L.Name
+		SELECT L.Name, L.Latitude, L.Longitude
 		FROM location L, university_location UL
 		WHERE UL.University_id = :id AND UL.Location_id = L.Location_id
 	';
@@ -67,10 +67,14 @@
 	$location_result->execute($university_params);
 	$location_row = $location_result->fetch();
 	$university_location = $location_row['Name'];
+	$university_latitude = $location_row['Latitude'];
+	$university_longitude = $location_row['Longitude'];
 	
 	echo "<h2>$university_name</h2>
 	<h4>$university_location</h4>
 	<hr>";
+	
+	echo "<img src='http://maps.googleapis.com/maps/api/staticmap?center=$university_latitude,+$university_longitude&zoom=15&scale=false&size=300x300&maptype=roadmap&format=png&visual_refresh=true&markers=size:mid%7Ccolor:0xff0000%7Clabel:1%7C$university_latitude,+$university_longitude'>";
 	
 	$uni_student_count = $row['Student_count'];
 	
@@ -111,6 +115,7 @@
 				$university_id,
 				$user_id
 			);
+			$user_can_join = false;
 		}
 	}
 	
@@ -120,15 +125,6 @@
 	<form role="form" action="" method="post">
 		<button type="submit" name="joinUniversity" class="btn btn-primary">Join University</button>
 	</form>
-<?php elseif($joined_this_session): ?>
-	<h2>
-        Submitted Request to Join
-    </h2>
-    <hr>
-    <p>
-        Congratulations, you've joined <?php $university_name ?>!
-    </p>
-    <p>
 <?php endif; ?>
 
 <?php include TEMPLATE_BOTTOM; ?>
