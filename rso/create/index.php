@@ -1,15 +1,6 @@
 <?php include '../../init.php'; ?>
 <?php include TEMPLATE_TOP; ?>
 	<title>Create RSO</title>
-    <script>
-		$(function() {
-            $('form').on('click', '.addMember', function() {
-                var start = $('#member_list'),
-                newMember = $('<div class="form-group"><input type="email" class="form-control" id="rsoMemberEmail" placeholder="Email" size="50" maxlength="50" required></div>');
-                $(start).append(newMember);
-            });
-		});
-	</script>
 
 <?php include TEMPLATE_MIDDLE;
     $status = 0;
@@ -88,8 +79,6 @@
         $name_taken = $result->fetchColumn();
         if ($name_taken)
             return RSO_TAKEN;
-        
-        // Add the extra members into the list of emails
         
         // Check to ensure all emails are unique and not the same as the admin_email
         $total_members = count($member_emails) + 1;
@@ -235,17 +224,18 @@
     // If the user has submitted the form to create a RSO
     if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $member_emails = array(
-            $_POST['member_email_1'],
-            $_POST['member_email_2'],
-            $_POST['member_email_3'],
-            $_POST['member_email_4']
+            strtolower($_POST['member_email_1']),
+            strtolower($_POST['member_email_2']),
+            strtolower($_POST['member_email_3']),
+            strtolower($_POST['member_email_4']),
+            strtolower($_POST['member_email_5'])
         ); 
         
         if (isset($_POST['createRSO'])) {
             $status = tryCreateRSO(
                 $db,
                 $_POST['name'],
-                $_POST['admin_email'],
+                strtolower($_POST['admin_email']),
                 $member_emails
             );
         }
@@ -264,6 +254,7 @@
         $member_email_2 = ($status == 0) ? '' : htmlentities($_POST['member_email_2']);
         $member_email_3 = ($status == 0) ? '' : htmlentities($_POST['member_email_3']);
         $member_email_4 = ($status == 0) ? '' : htmlentities($_POST['member_email_4']);
+        $member_email_5 = ($status == 0) ? '' : htmlentities($_POST['member_email_5']);
     ?>
 	<p>
 		<form role="form" action="" method="post">
@@ -315,8 +306,10 @@
                 <div class="form-group">
                     <input type="email" class="form-control" id="member_email_4" name="member_email_4" placeholder="Email" size="50" maxlength="50" required value="<?=$member_email_4?>">
                 </div>
-            </div>
-            <button type="button" class="addMember btn btn-success btn-sm">Add Member</button><br><br><br>
+                <div class="form-group">
+                    <input type="email" class="form-control" id="member_email_5" name="member_email_5" placeholder="Email" size="50" maxlength="50" required value="<?=$member_email_5?>">
+                </div>
+            </div><br>
             <?php elseif ($status == NOT_ALL_VALID): ?>
             <div class="has-error" id="member_list">
                 <label class="text-danger">List of Members</label>
@@ -333,8 +326,10 @@
                 <div class="form-group">
                     <input type="email" class="form-control" id="member_email_4" name="member_email_4" placeholder="Email" size="50" maxlength="50" required value="<?=$member_email_4?>">
                 </div>
-            </div>
-            <button type="button" class="addMember btn btn-success btn-sm">Add Member</button><br><br><br>
+                <div class="form-group">
+                    <input type="email" class="form-control" id="member_email_5" name="member_email_5" placeholder="Email" size="50" maxlength="50" required value="<?=$member_email_5?>">
+                </div>
+            </div><br>
             <?php elseif ($status == NOT_ALL_SAME_UNIVERSITY): ?>
             <div class="has-error" id="member_list">
                 <label class="text-danger">List of Members</label>
@@ -351,8 +346,10 @@
                 <div class="form-group">
                     <input type="email" class="form-control" id="member_email_4" name="member_email_4" placeholder="Email" size="50" maxlength="50" required value="<?=$member_email_4?>">
                 </div>
-            </div>
-            <button type="button" class="addMember btn btn-success btn-sm">Add Member</button><br><br><br>
+                <div class="form-group">
+                    <input type="email" class="form-control" id="member_email_5" name="member_email_5" placeholder="Email" size="50" maxlength="50" required value="<?=$member_email_5?>">
+                </div>
+            </div><br>
             <?php elseif ($status == NOT_ALL_SAME_DOMAIN): ?>
             <div class="has-error" id="member_list">
                 <label class="text-danger">List of Members</label>
@@ -369,8 +366,10 @@
                 <div class="form-group">
                     <input type="email" class="form-control" id="member_email_4" name="member_email_4" placeholder="Email" size="50" maxlength="50" required value="<?=$member_email_4?>">
                 </div>
-            </div>
-            <button type="button" class="addMember btn btn-success btn-sm">Add Member</button><br><br><br>
+                <div class="form-group">
+                    <input type="email" class="form-control" id="member_email_5" name="member_email_5" placeholder="Email" size="50" maxlength="50" required value="<?=$member_email_5?>">
+                </div>
+            </div><br>
 			<?php else: ?>
             <div id="member_list">
                 <label>List of Members</label>
@@ -385,6 +384,9 @@
                 </div>
                 <div class="form-group">
                     <input type="email" class="form-control" id="member_email_4" name="member_email_4" placeholder="Email" size="50" maxlength="50" required value="<?=$member_email_4?>">
+                </div>
+                <div class="form-group">
+                    <input type="email" class="form-control" id="member_email_5" name="member_email_5" placeholder="Email" size="50" maxlength="50" required value="<?=$member_email_5?>">
                 </div>
             </div><br>
             <?php endif; ?>
