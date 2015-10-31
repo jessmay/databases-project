@@ -85,7 +85,29 @@
             return INVALID_LOCATION;
         }
         
-        // TODO: Check to see if there is an existing event with the same date, time, and place
+        // Create the location name to be stored into the Location table and check for conflicts
+        if ($room_number != '')
+            $location_name = $room_number . ' at ';
+        $location_name .= $location . ' at ';
+        $location_name .= $address;
+
+        // Check to see if there is an existing event with the same date, time, and place
+        $event_conflict_params = array(
+            ':date_time' => $date_time,
+            ':location_name' => strtolower($location_name)
+        );
+        $event_conflict_query = '
+            SELECT COUNT(*)
+            FROM Event E, Event_Location EL, Location L
+            WHERE (E.date_time = :date_time) AND (E.Event_id = EL.Event_id) AND (EL.Location_id = L.Location_id) AND (LOWER(L.Name) = :location_name)
+        ';
+        
+        $result = $db->prepare($event_conflict_query);
+        $result->execute($event_conflict_params);
+        $event_conflict = $result->fetchColumn();
+        
+        if ($event_conflict)
+            return CONFLICT;
         
         // Check the user correctly submitted an RSO to be associated with the event if applicable
         if ($rso_id == 'Not Applicable' && $event_type == RSO_EVENT) {
@@ -193,12 +215,6 @@
         $result = $db
             ->prepare($create_event_relation_query)
             ->execute($create_event_relation_params);
-        
-        // Create the location name to be stored into the Location table
-        if ($room_number != '')
-            $location_name = $room_number . ' at ';
-        $location_name = $location . ' at ';
-        $location_name .= $address;
         
         // Insert the location into the Location table
         $create_location_params = array(
@@ -312,7 +328,11 @@
                             $result = $db->prepare($get_category_query);
                             $result->execute();
                             while ($res = $result->fetch()) {
-                                echo '<option value="'.$res['Category_id'].'">';
+                                echo '<option value="'.$res['Category_id'].'"';
+                                if ($category_id == $res['Category_id']) {
+                                    echo ' selected';
+                                }
+                                echo '>';
                                 echo $res['Name'];
                                 echo '</option>'.PHP_EOL;
                             }
@@ -326,6 +346,24 @@
 				<textarea class="form-control" id="description" name="description" rows="3" placeholder="Add more info" size="2000" maxlength="2000" required><?=$description?></textarea>
 			</div>
 			
+            <?php if ($status == CONFLICT): ?>
+            <label class="text-danger">Location Details</label><br>
+            <span id="conflict" class="text-danger">There is already an event at this time, date, and place. Please change either your event location or time or date.</span>
+            <div class="row">
+                <div class="col-md-5 form-group has-error">
+                    <label for="location" class="text-danger" style="font-size:small">Where</label>
+                    <input type="text" class="form-control" id="location" name="location" placeholder="ex: Student Union" size="50" maxlength="30" required value="<?=$location?>">
+                </div>
+                <div class="col-md-5 form-group has-error">
+                    <label for="room_number" class="text-danger" style="font-size:small">Meeting Place</label> <i>(optional)</i>
+                    <input type="text" class="form-control" id="room_number" name="room_number" placeholder="ex: Domino's Pizza or 203" size="50" maxlength="30" value="<?=$room_number?>">
+                </div>
+            </div>
+            <div class="form-group has-error">
+                <label for="address" style="font-size:small" class="text-danger">Address</label>
+                <input type="text" class="form-control" id="address" name="address" placeholder="ex: 12715 Pegasus Dr, Orlando, FL 32816" size="100" maxlength="100" required value="<?=$address?>">
+            </div>
+            <?php else: ?>
             <label>Location Details</label>
             <div class="row">
                 <div class="col-md-5 form-group">
@@ -339,17 +377,31 @@
             </div>
             <?php if ($status == INVALID_LOCATION): ?>
             <div class="form-group has-error">
-                    <label for="address" style="font-size:small">Address</label>
-                    <input type="text" class="form-control" id="address" name="address" placeholder="ex: 12715 Pegasus Dr, Orlando, FL 32816" size="100" maxlength="100" required value="<?=$address?>">
-                    <span id="invalid_location" class="help-block">This address could not be located. Please enter a valid address.</span>
+                <label for="address" style="font-size:small">Address</label>
+                <input type="text" class="form-control" id="address" name="address" placeholder="ex: 12715 Pegasus Dr, Orlando, FL 32816" size="100" maxlength="100" required value="<?=$address?>">
+                <span id="invalid_location" class="help-block">This address could not be located. Please enter a valid address.</span>
             </div>
             <?php else: ?>
             <div class="form-group">
-                    <label for="address" style="font-size:small">Address</label>
-                    <input type="text" class="form-control" id="address" name="address" placeholder="ex: 12715 Pegasus Dr, Orlando, FL 32816" size="100" maxlength="100" required value="<?=$address?>">
+                <label for="address" style="font-size:small">Address</label>
+                <input type="text" class="form-control" id="address" name="address" placeholder="ex: 12715 Pegasus Dr, Orlando, FL 32816" size="100" maxlength="100" required value="<?=$address?>">
             </div>
             <?php endif; ?>
+            <?php endif; ?>
 			
+            <?php if ($status == CONFLICT): ?>
+			<div class="row">
+				<div class="col-md-4 form-group has-error">
+					<label for="event_date" class="text-danger">Date</label>
+					<input type="text" class="form-control" id="datepicker" name="event_date" pattern="[0-1][0-9]/[0-3][0-9]/20[0-9][0-9]" required value="<?=$event_date?>">
+				</div>
+				<div class="col-md-2"></div>
+				<div class="col-md-4 form-group has-error">
+					<label for="event_time" class="text-danger">Time</label>
+					<input type="text" id="timespinner" name="event_time" pattern="(1|2|3|4|5|6|7|8|9|10|11|12) (PM|AM)" required value="<?=$event_time?>">
+				</div>
+			</div>
+            <?php else: ?>
 			<div class="row">
 				<div class="col-md-4 form-group">
 					<label for="event_date">Date</label>
@@ -361,6 +413,7 @@
 					<input type="text" id="timespinner" name="event_time" pattern="(1|2|3|4|5|6|7|8|9|10|11|12) (PM|AM)" required value="<?=$event_time?>">
 				</div>
 			</div>
+            <?php endif; ?>
 			
 			<div class="row">
 				<div class="col-md-1">
@@ -403,7 +456,11 @@
                             $result->execute($get_rso_params);
                             echo '<option>Not Applicable</option>';
                             while ($res = $result->fetch()) {
-                                echo '<option value="'.$res['RSO_id'].'">';
+                                echo '<option value="'.$res['RSO_id'].'"';
+                                if ($rso_id == $res['RSO_id']) {
+                                    echo ' selected';
+                                }
+                                echo '>';
                                 echo $res['Name'];
                                 echo '</option>'.PHP_EOL;
                             }
@@ -428,7 +485,11 @@
                             $result->execute($get_rso_params);
                             echo '<option>Not Applicable</option>';
                             while ($res = $result->fetch()) {
-                                echo '<option value="'.$res['RSO_id'].'">';
+                                echo '<option value="'.$res['RSO_id'].'"';
+                                if ($rso_id == $res['RSO_id']) {
+                                    echo ' selected';
+                                }
+                                echo '>';
                                 echo $res['Name'];
                                 echo '</option>'.PHP_EOL;
                             }
@@ -453,7 +514,11 @@
                             $result->execute($get_rso_params);
                             echo '<option>Not Applicable</option>';
                             while ($res = $result->fetch()) {
-                                echo '<option value="'.$res['RSO_id'].'">';
+                                echo '<option value="'.$res['RSO_id'].'"';
+                                if ($rso_id == $res['RSO_id']) {
+                                    echo ' selected';
+                                }
+                                echo '>';
                                 echo $res['Name'];
                                 echo '</option>'.PHP_EOL;
                             }
@@ -478,7 +543,11 @@
                             $result->execute($get_rso_params);
                             echo '<option>Not Applicable</option>';
                             while ($res = $result->fetch()) {
-                                echo '<option value="'.$res['RSO_id'].'">';
+                                echo '<option value="'.$res['RSO_id'].'"';
+                                if ($rso_id == $res['RSO_id']) {
+                                    echo ' selected';
+                                }
+                                echo '>';
                                 echo $res['Name'];
                                 echo '</option>'.PHP_EOL;
                             }
