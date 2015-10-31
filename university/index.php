@@ -35,7 +35,7 @@
 
         //We use google's geocode api to take in the place of interest
         //and see if we can return a valid result back from it.
-        $search_lookup = lookup($search_string);
+        $search_lookup = lookup($search_string.", USA");
 
         if($see_output){
             print_r($search_lookup);
@@ -51,18 +51,19 @@
         $result_name->execute($university_name_params);
         $number = $result_name->rowCount();
         
-        echo "<h3><strong>$number result(s) found searching for '$search_string' by Name. </strong></h3><hr><br>";
+        echo "<h3><strong>$number result(s) found searching for '$search_string' by Name. </strong></h3><hr/>";
 
         while($row = $result_name->fetch()){
             $Name =$row['Name'];
             $ID = $row['University_id'];
 
-            echo "<a href='/university/profile?id=$ID'><h3><strong>$Name</strong></h3><hr></a>";
+            echo "<a href='/university/profile?id=$ID'><h3><strong>$Name</strong></h3></a><hr/>";
            
         }
+        echo "<br><hr style='border: 1px solid #000;' />";
         // If Status Code is ZERO_RESULTS, OVER_QUERY_LIMIT, REQUEST_DENIED or INVALID_REQUEST
         if ($search_lookup['latitude'] == 'failed') {
-            echo "<h3><strong>0 result(s) found searching for '$search_string' by Location. </strong></h3><hr><br>";
+            echo "<h3><strong>0 result(s) found searching for '$search_string' by Location. </strong></h3><hr/>";
         }
 
         else{
@@ -79,8 +80,8 @@
             $location_result->execute($university_name_params);
 
             $count = 0;
-            $final_location_name = array();
-            $final_location_id = array();
+            $answer = Array();
+
             while($location_row = $location_result->fetch()){
                 $latitude =$location_row['Latitude'];
                 $longitude =$location_row['Longitude'];
@@ -95,8 +96,13 @@
 
                 if($distance <= 16.0){
                     $count++;
-                    array_push($final_location_name, $university_name);
-                    array_push($final_location_id, $ID);
+                    array_push($answer, Array
+                                            (       
+                                                'Name' => $university_name,
+                                                'ID' => $ID,
+                                                'Distance' => $distance
+                                     
+                                            ));
 
                 }
 
@@ -107,16 +113,35 @@
                     echo "<h3><strong>Lat: $latitude, Lng: $longitude</strong></h3><hr><br>";
                 }
             }
+            if($see_output){
+                print_r($answer);
+                echo "<br>";
+            }
+            usort($answer, "cmp");
+            if($see_output){  
+                print_r($answer);
+            }
+            echo "<h3><strong>$count result(s) found searching for '$search_string' by Location. </strong></h3><hr/>";
 
-            echo "<h3><strong>$count result(s) found searching for '$search_string' by Location. </strong></h3><hr><br>";
-
-            for($i = 0, $size = count($final_location_name); $i < $size; $i++){
-                echo "<a href='/university/profile?id=$final_location_id[$i]'><h3><strong>$final_location_name[$i]</strong></h3><hr></a>";
+            for($i = 0, $size = count($answer); $i < $size; $i++){
+                $answer_id = $answer[$i]['ID'];
+                $answer_name = $answer[$i]['Name'];
+                echo "<a href='/university/profile?id=$answer_id'><h3><strong>$answer_name</strong></h3><hr></a>";
             }
         }
         
     }
     
+?>
+
+<?php
+function cmp($a, $b)
+{
+    if ($a['Distance'] == $b['Distance']) {
+        return 0;
+    }
+    return ($a['Distance'] < $b['Distance']) ? -1 : 1;
+}
 ?>
 
 <?php include TEMPLATE_MAP; ?>
