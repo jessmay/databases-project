@@ -118,9 +118,9 @@
 	<br>";
 	
 	$event_description = $row['Description'];
-	echo "<h4>Event Description</h4>
-	<p>$event_description</p>
-	<br>";
+	echo '<h4>Event Description</h4>
+	<p style="white-space:pre-wrap;">'.$event_description.'</p>
+	<br>';
 	
 	$event_phone = $row['Contact_phone'];
 	$event_email = $row['Contact_email'];

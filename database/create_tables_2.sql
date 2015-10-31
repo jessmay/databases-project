@@ -19,9 +19,6 @@ CREATE TABLE IF NOT EXISTS University (
     UNIQUE      (Name)
 );
 
-INSERT INTO University (University_id, Name) 
-       VALUES (1, 'Default University');
-
 CREATE TABLE IF NOT EXISTS User (
     User_id       INTEGER NOT NULL AUTO_INCREMENT,
     Email         CHAR(50),
@@ -34,9 +31,6 @@ CREATE TABLE IF NOT EXISTS User (
     FOREIGN KEY (University_id) REFERENCES University (University_id),
     UNIQUE      (Email)
 );
-
-INSERT INTO User (User_id, University_id, First_name, Last_name) 
-       VALUES (1, 1, 'Bobby', 'Tables');
 
 CREATE TABLE IF NOT EXISTS Picture (
     Picture_id INTEGER NOT NULL AUTO_INCREMENT,
@@ -91,7 +85,7 @@ CREATE TABLE IF NOT EXISTS Category (
 
 CREATE TABLE IF NOT EXISTS Location (
     Location_id INTEGER NOT NULL AUTO_INCREMENT,
-    Name        CHAR(200),
+    Name        CHAR(160),
     Latitude    DOUBLE,
     Longitude   DOUBLE,
     PRIMARY KEY (Location_id)

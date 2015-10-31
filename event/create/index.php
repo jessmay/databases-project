@@ -323,18 +323,18 @@
 			
 			<div class="form-group">
 				<label for="description">Description</label>
-				<textarea class="form-control" id="description" name="description" rows="3" placeholder="Add more info" size="160" maxlength="160" required><?=$description?></textarea>
+				<textarea class="form-control" id="description" name="description" rows="3" placeholder="Add more info" size="2000" maxlength="2000" required><?=$description?></textarea>
 			</div>
 			
             <label>Location Details</label>
             <div class="row">
                 <div class="col-md-5 form-group">
                     <label for="location" style="font-size:small">Where</label>
-                    <input type="text" class="form-control" id="location" name="location" placeholder="ex: Student Union" size="30" maxlength="30" required value="<?=$location?>">
+                    <input type="text" class="form-control" id="location" name="location" placeholder="ex: Student Union" size="50" maxlength="30" required value="<?=$location?>">
                 </div>
                 <div class="col-md-5 form-group">
                     <label for="room_number" style="font-size:small">Meeting Place</label> <i>(optional)</i>
-                    <input type="text" class="form-control" id="room_number" name="room_number" placeholder="ex: Domino's Pizza or 203" size="30" maxlength="30" value="<?=$room_number?>">
+                    <input type="text" class="form-control" id="room_number" name="room_number" placeholder="ex: Domino's Pizza or 203" size="50" maxlength="30" value="<?=$room_number?>">
                 </div>
             </div>
             <?php if ($status == INVALID_LOCATION): ?>
@@ -346,7 +346,7 @@
             <?php else: ?>
             <div class="form-group">
                     <label for="address" style="font-size:small">Address</label>
-                    <input type="text" class="form-control" id="address" name="address" placeholder="ex: 12715 Pegasus Dr, Orlando, FL 32816" size="50" maxlength="50" required value="<?=$address?>">
+                    <input type="text" class="form-control" id="address" name="address" placeholder="ex: 12715 Pegasus Dr, Orlando, FL 32816" size="100" maxlength="100" required value="<?=$address?>">
             </div>
             <?php endif; ?>
 			

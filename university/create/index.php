@@ -249,7 +249,7 @@
 			
             <div class="form-group">
 				<label for="description">Description</label>
-				<textarea class="form-control" id="description" name="description" rows="3" placeholder="Add more info" size="160" maxlength="160" required><?=$description?></textarea>
+				<textarea class="form-control" id="description" name="description" rows="3" placeholder="Add more info" size="2000" maxlength="2000" required><?=$description?></textarea>
 			</div>
             
             <?php if ($status == INVALID_LOCATION): ?>

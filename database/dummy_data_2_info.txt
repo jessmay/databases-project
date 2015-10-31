@@ -1,0 +1,43 @@
+Name                Password                Email Format (last.first@univ.edu)
+
+John Hitt           UCF President           hitt.john@knights.ucf.edu
+Andre Sanchez       UCF Student
+Betty Stanley       UCF Student
+Christine Poole     UCF Student
+Earl Sparks         UCF Student
+Jerald Baldwin      UCF Student
+Jerry Carroll       UCF Student
+Ronald Barber       UCF Student
+Susie Elliott       UCF Student
+Tricia Baldwin      UCF Student
+
+Grant Cornwell      Rollins President       cornwell.grant@rollins.edu
+Alfred Gonzales     Rollins Student
+Corey Tate          Rollins Student
+Lorena Payne        Rollins Student
+Malcolm Barrett     Rollins Student
+Sophie Bridges      Rollins Student
+
+Kent Fuchs          UF President            fuchs.kent@uf.edu
+Ada	Higgins         UF Student
+Debbie Watts        UF Student
+Rachael	Willis      UF Student
+Roy	Hunt            UF Student
+Suzanne Austin      UF Student
+Toni Beck           UF Student
+
+Rafael Reif         MIT President           reif.rafael@mit.ed
+Bryant Stevens      MIT Student
+Candace Higgins     MIT Student
+Kimberly Griffin    MIT Student
+Mario Hines         MIT Student
+Scott Patrick       MIT Student
+Wilfred Banks       MIT Student
+
+Nicholas Dirks      UCB President           dirks.nicholas@ucb.edu
+Becky Cannon        UCB Student
+Eric Smith          UCB Student
+Herbert West        UCB Student
+James Abbott        UCB Student
+Kyle Hale           UCB Student
+Phil Bass           UCB Student

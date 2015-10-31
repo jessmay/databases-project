@@ -84,9 +84,9 @@
 	
 	$uni_description = $row['Description'];
 	
-	echo "<h4>University Description</h4>
-	<p>$uni_description</p>
-	<br>";
+	echo '<h4>University Description</h4>
+	<p style="white-space:pre-wrap;">'.$uni_description.'</p>
+	<br>';
 	
 	$joined_this_session = false;
 	
