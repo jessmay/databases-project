@@ -7,13 +7,31 @@
 	// RSO association with RSO event
 	// ratings - stars
 	
-	//Events: Type: 1 - Private; 2 - RSO; 3 - Public
-	
-	$user = $_SESSION['user'];
-	$user_id =$user['User_id'];
 	$event_id = $_GET['id'];
 	$url = $_SERVER['REQUEST_URI'];
 	
+	// Get event details
+	$event_query = '
+		SELECT *
+		FROM Event E
+		WHERE E.Event_id = :id
+	';
+
+	$event_params = array(':id' => $event_id);
+	$result = $db->prepare($event_query);
+	$result->execute($event_params);
+	$row = $result->fetch();
+	
+	//Check if this is a private event
+	$event_type = $row['Type'];
+	
+	if($event_type == 1 && !$logged_in){
+		header('Location: /');
+		exit();
+	}
+	
+	$user = $_SESSION['user'];
+	$user_id =$user['User_id'];
 	$user_can_join = false;
 	$join_event_success=false;
 	$create_comment_success=false;
@@ -40,20 +58,6 @@
 		$user_can_join = true;
 	}
 
-	// Get event details
-	$event_query = '
-		SELECT *
-		FROM Event E
-		WHERE E.Event_id = :id
-	';
-
-	$event_params = array(':id' => $event_id);
-	$result = $db->prepare($event_query);
-	$result->execute($event_params);
-	$row = $result->fetch();
-	
-	//Check if this is a private event
-	$event_type = $row['Type'];
 	if($event_type == 1){
 		// Get University hosting this event
 		$event_university_query = '
@@ -71,9 +75,8 @@
 	
 		// Verify user can view this event, if not, redirect to home page
 		if($user['University_id'] == null || $user['University_id'] != $event_university_row['University_id']){
-			echo "<p>Enter private event redirect</p>";
-			 header('Location: /');
-			 exit();
+			header('Location: /');
+			exit();
 		}
 	}
 	else if($event_type == 2){ // TODO check against RSO
