@@ -50,9 +50,12 @@
         $result_name = $db->prepare($search_name);
         $result_name->execute($university_name_params);
         $number = $result_name->rowCount();
-        
-        echo "<h3><strong>$number result(s) found searching for '$search_string' by Name. </strong></h3><hr/>";
-
+        if($number ==  1){
+            echo "<h3><strong>$number result found searching for '$search_string' by Name. </strong></h3><hr/>";
+        }
+        else{
+            echo "<h3><strong>$number results found searching for '$search_string' by Name. </strong></h3><hr/>";
+        }
         while($row = $result_name->fetch()){
             $Name =$row['Name'];
             $ID = $row['University_id'];
@@ -63,7 +66,7 @@
         echo "<br><hr style='border: 1px solid #000;' />";
         // If Status Code is ZERO_RESULTS, OVER_QUERY_LIMIT, REQUEST_DENIED or INVALID_REQUEST
         if ($search_lookup['latitude'] == 'failed') {
-            echo "<h3><strong>0 result(s) found searching for '$search_string' by Location. </strong></h3><hr/>";
+            echo "<h3><strong>0 results found searching for '$search_string' by Location. </strong></h3><hr/>";
         }
 
         else{
@@ -121,7 +124,14 @@
             if($see_output){  
                 print_r($answer);
             }
-            echo "<h3><strong>$count result(s) found searching for '$search_string' by Location. </strong></h3><hr/>";
+            
+            if($count == 1){
+                echo "<h3><strong>$count result found searching for '$search_string' by Location. </strong></h3><hr/>";
+            }
+
+            else{
+                echo "<h3><strong>$count results found searching for '$search_string' by Location. </strong></h3><hr/>";
+            }
 
             for($i = 0, $size = count($answer); $i < $size; $i++){
                 $answer_id = $answer[$i]['ID'];

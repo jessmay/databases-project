@@ -3,6 +3,7 @@
     <title>Find Event</title>
 
 <?php include TEMPLATE_MIDDLE; ?>
+<?php include MAP_FUNCTIONS; ?>
     
 <!-- TODO:
     1.)Implement the location results and Sort results in ascending order from distance away.
@@ -49,4 +50,5 @@
     }
     
 ?>
+<?php include TEMPLATE_MAP; ?>
 <?php include TEMPLATE_BOTTOM; ?>
