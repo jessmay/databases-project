@@ -3,9 +3,6 @@
 	<title>Event View Page</title>
 
 <?php include TEMPLATE_MIDDLE;
-	// TODO 
-	// RSO association with RSO event
-	// ratings - stars
 	
 	$event_id = $_GET['id'];
 	$url = $_SERVER['REQUEST_URI'];
@@ -22,10 +19,12 @@
 	$result->execute($event_params);
 	$row = $result->fetch();
 	
-	//Check if this is a private event
+	
 	$event_type = $row['Type'];
 	
-	if($event_type == 1 && !$logged_in){
+	// If this event is private or belongs to an RSO, 
+	// and the viewer is not logged in, they get redirected 
+	if(($event_type == 1 || $event_type == 2) && !$logged_in){
 		header('Location: /');
 		exit();
 	}
@@ -39,7 +38,7 @@
 	$message="";
 	$rating=null;
 	
-	// Check if the user can join this event
+	// Check if the user has joined this event
 	$user_event_query = '
 		SELECT COUNT(*) AS userParticipating
 		FROM event_user EU
@@ -58,6 +57,8 @@
 		$user_can_join = true;
 	}
 
+	// If the event is private, the logged in user must be a member
+	// of the university hosting the event
 	if($event_type == 1){
 		// Get University hosting this event
 		$event_university_query = '
@@ -69,9 +70,6 @@
 		$event_university_result = $db->prepare($event_university_query);
 		$event_university_result->execute($event_university_params);
 		$event_university_row = $event_university_result->fetch();
-		$ni_id = $event_university_row['University_id'];
-		$u_id = $user['University_id'];
-		echo "<p>Enter private event redirect $ni_id - $u_id</p>";
 	
 		// Verify user can view this event, if not, redirect to home page
 		if($user['University_id'] == null || $user['University_id'] != $event_university_row['University_id']){
@@ -79,8 +77,30 @@
 			exit();
 		}
 	}
-	else if($event_type == 2){ // TODO check against RSO
-	
+	else if($event_type == 2){ // If the event belongs to an RSO, the logged in user must be a member
+		// RSO hosting event
+		$rso_id = $row['RSO_id'];
+		
+		// Get RSO's the user is a member of
+		$user_rso_query = '
+			SELECT COUNT(*) AS user_is_member
+			FROM rso_user RU
+			WHERE RU.User_id = :user_id AND RU.RSO_id = :rso_id
+		';
+		$user_rso_params = array(
+			':user_id' => $user_id,
+			':rso_id' => $rso_id
+		);
+		$user_rso_results = $db->prepare($user_rso_query);
+		$user_rso_results->execute($user_rso_params);
+		$user_rso_row = $user_rso_results->fetch();
+		
+		// If the user is not in the RSO, redirect to home page
+		if($user_rso_row['user_is_member'] == 0){
+			header('Location: /');
+			exit();
+		}
+		
 	}
 	
 	$event_name = $row['Name'];
