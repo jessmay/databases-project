@@ -8,8 +8,13 @@
 	
 	$university_id = $_GET['id'];
 	
-	$user = $_SESSION['user'];
-	$user_id =$user['User_id'];
+	$user = null;
+	$user_id = null;
+	
+	if($logged_in) {
+		$user = $_SESSION['user'];
+		$user_id =$user['User_id'];
+	}
 	
 	$user_can_join = false;
 
@@ -28,7 +33,7 @@
 	$user_in_university_row = $user_in_university_result->fetch();
 	$user_in_university = $user_in_university_row['University_id'];
 
-	if($user_in_university == 1){
+	if($logged_in && $user_in_university == 1){
 		$user_can_join = true;
 	}
 	

@@ -29,8 +29,12 @@
 		exit();
 	}
 	
-	$user = $_SESSION['user'];
-	$user_id =$user['User_id'];
+	$user = null;
+	$user_id = null;
+	if($logged_in){
+		$user = $_SESSION['user'];
+		$user_id =$user['User_id'];
+	}
 	$user_can_join = false;
 	$join_event_success=false;
 	$create_comment_success=false;
@@ -53,7 +57,7 @@
 	$user_event_results->execute($user_event_params);
 	$user_event_row = $user_event_results->fetch();
 	
-	if($user_event_row['userParticipating'] == 0){
+	if($logged_in && $user_event_row['userParticipating'] == 0){
 		$user_can_join = true;
 	}
 
@@ -299,23 +303,7 @@
 
 <?php
 	$rating = $rating ? htmlentities($_POST['rating']) : '';
-?>
-<p>
-	<form role="form" action"" method="post">
-		<div class="row">
-			<div class="form-group">
-				<label class="control-label" for="rating">How would you rate this event? (1-5 where 1 is worst and 5 is best)</label>
-				<div class="input-group">
-					<input type="text" class="form-control" id="rating" name="rating" placeholder="Input a rating from 1-5 here." size="20" maxlength="1" required value="<?=$rating?>">
-					<span class="input-group-btn">	
-						<button type="submit" name="createRating" class="btn btn-primary">Submit Rating</button>
-					</span>
-				</div>
-			</div>
-		</div>
-	</form>
-</p>
-<?php
+
 	$comment_query = '
 		SELECT *
 		FROM comment C
@@ -348,28 +336,44 @@
 	}
     $message = $message ? htmlentities($_POST['message']) : '';
 ?>
-<p>
-	<form role="form" action"" method="post">
-		<div class="row">
-			<div class="form-group">
-				<label class="control-label" for="message">Add a comment</label>
-				<div class="input-group">
-					<input type="text" class="form-control" id="message" name="message" placeholder="Type your comment here." size="160" maxlength="160" required value="<?=$message?>">
-					<span class="input-group-btn">	
-						<button type="submit" name="createComment" class="btn btn-primary">Post Comment</button>
-					</span>
-				</div>
-			</div>				
-		</div>
-	</form>
-</p>
+
 
 <?php if($user_can_join): ?>
+	<p>
+		<form role="form" action"" method="post">
+			<div class="row">
+				<div class="form-group">
+					<label class="control-label" for="rating">How would you rate this event? (1-5 where 1 is worst and 5 is best)</label>
+					<div class="input-group">
+						<input type="text" class="form-control" id="rating" name="rating" placeholder="Input a rating from 1-5 here." size="20" maxlength="1" required value="<?=$rating?>">
+						<span class="input-group-btn">	
+							<button type="submit" name="createRating" class="btn btn-primary">Submit Rating</button>
+						</span>
+					</div>
+				</div>
+			</div>
+		</form>
+	</p>
+	<p>
+		<form role="form" action"" method="post">
+			<div class="row">
+				<div class="form-group">
+					<label class="control-label" for="message">Add a comment</label>
+					<div class="input-group">
+						<input type="text" class="form-control" id="message" name="message" placeholder="Type your comment here." size="160" maxlength="160" required value="<?=$message?>">
+						<span class="input-group-btn">	
+							<button type="submit" name="createComment" class="btn btn-primary">Post Comment</button>
+						</span>
+					</div>
+				</div>				
+			</div>
+		</form>
+	</p>
 	<form role="form" action="<?php echo $url; ?>" method="post">
 		<button type="submit" name="joinEvent" class="btn btn-primary">Join Event</button>
 	</form>
 <?php endif; ?>
 
-<a class="facebook-share-button" href="https://www.facebook.com/sharer.php?u=<?php echo urlencode($url); ?>">Share on Facebook</a>
+<a href="https://www.facebook.com/sharer.php?u=<?php echo urlencode($url); ?>">Share on Facebook</a>
 	
 <?php include TEMPLATE_BOTTOM; ?>

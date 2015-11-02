@@ -9,8 +9,13 @@
 	$rso_id = $_GET['id'];
 	$url = $_SERVER['REQUEST_URI'];
 	
-	$user = $_SESSION['user'];
-	$user_id =$user['User_id'];
+	$user = null;
+	$user_id = null;
+	
+	if($logged_in) {
+		$user = $_SESSION['user'];
+		$user_id =$user['User_id'];
+	}
 	
 	$user_can_join = false;
 
@@ -30,7 +35,7 @@
 	$user_in_RSO_row = $user_in_RSO_result->fetch();
 	$user_in_RSO = $user_in_RSO_row['user_joined'];
 
-	if($user_in_RSO==0){
+	if($logged_in && $user_in_RSO==0){
 		$user_can_join = true;
 	}
 	
