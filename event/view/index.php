@@ -106,8 +106,7 @@
 		if($user_rso_row['user_is_member'] == 0){
 			header('Location: /');
 			exit();
-		}
-		
+		}	
 	}
 	
 	$event_name = $row['Name'];
@@ -270,7 +269,6 @@
 		else {
 			return false;
 		}
-		
 	}
 	
 	if($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -300,12 +298,7 @@
 			);
 		}
 	}
-	
-?>
 
-
-
-<?php
 	$rating = $rating ? htmlentities($_POST['rating']) : '';
 
 	$comment_query = '
@@ -318,7 +311,7 @@
 	$comment_result->execute($event_params);
 	
 	while($comment_rows = $comment_result->fetch()) {
-		$user_id = $comment_rows['User_id'];
+		$comment_user_id = $comment_rows['User_id'];
 		
 		$user_query = '
 			SELECT U.First_name, U.Last_name
@@ -326,7 +319,7 @@
 			WHERE U.User_id = :user_id
 		';
 		
-		$user_params = array(':user_id' => $user_id);
+		$user_params = array(':user_id' => $comment_user_id);
 		$user_result = $db->prepare($user_query);
 		$user_result->execute($user_params);
 		$user_row = $user_result->fetch();
@@ -336,7 +329,18 @@
 		
 		$comment = $comment_rows['Message'];
 		$time = $comment_rows['Date'];
-		echo "<h5><strong>$user_first_name $user_last_name:</strong>$comment</h5><h6>$time</h6><hr>";
+		echo "<div class='input-group'><h5><strong>$user_first_name $user_last_name:</strong>$comment</h5><h6>$time</h6><hr>";
+		
+		if($user_id == $comment_user_id){
+			echo "<span class='input-group-btn'>	
+				<button type='submit' name='editComment' class='btn btn-primary'>Edit</button>
+			</span>
+			<span class='input-group-btn'>	
+				<button type='submit' name='deleteComment' class='btn btn-primary'>Delete</button>
+			</span>";
+		}
+		
+		echo "</div>";
 	}
     $message = $message ? htmlentities($_POST['message']) : '';
 ?>
