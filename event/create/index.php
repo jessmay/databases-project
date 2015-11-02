@@ -67,7 +67,7 @@
         
         // If the event is an RSO event, then approval from the super-admin isn't needed
         $approved = 0;
-        if ($event_type == RSO_EVENT || $_SESSION['user']['Type'] == 3)
+        if ($event_type == RSO_EVENT || $is_type_super_admin)
         {
             $approved = 1;
         }
@@ -86,8 +86,9 @@
         }
         
         // Create the location name to be stored into the Location table and check for conflicts
+        $location_name = '';
         if ($room_number != '')
-            $location_name = $room_number . ' at ';
+            $location_name .= $room_number . ' at ';
         $location_name .= $location . ' at ';
         $location_name .= $address;
 
