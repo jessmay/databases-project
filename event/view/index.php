@@ -19,7 +19,6 @@
 	$result->execute($event_params);
 	$row = $result->fetch();
 	
-	
 	$event_type = $row['Type'];
 	
 	// If this event is private or belongs to an RSO, 
@@ -36,6 +35,7 @@
 		$user_id =$user['User_id'];
 	}
 	$user_can_join = false;
+	$user_can_comment = false;
 	$join_event_success=false;
 	$create_comment_success=false;
 	$create_rating_success=false;
@@ -59,6 +59,9 @@
 	
 	if($logged_in && $user_event_row['userParticipating'] == 0){
 		$user_can_join = true;
+	}
+	else if($logged_in && $user_event_row['userParticipating'] == 1) {
+		$user_can_comment = true;
 	}
 
 	// If the event is private, the logged in user must be a member
@@ -278,6 +281,7 @@
 				$user_id
 			);
 			$user_can_join = false;
+			$user_can_comment = true;
 		}
 		elseif(isset($_POST['createComment'])) {
             $create_comment_success = tryPostComment(
@@ -337,8 +341,7 @@
     $message = $message ? htmlentities($_POST['message']) : '';
 ?>
 
-
-<?php if($user_can_join): ?>
+<?php if($user_can_comment): ?>
 	<p>
 		<form role="form" action"" method="post">
 			<div class="row">
@@ -369,6 +372,9 @@
 			</div>
 		</form>
 	</p>
+<?php endif; ?>
+	
+<?php if($user_can_join): ?>
 	<form role="form" action="<?php echo $url; ?>" method="post">
 		<button type="submit" name="joinEvent" class="btn btn-primary">Join Event</button>
 	</form>
