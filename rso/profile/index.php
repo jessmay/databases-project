@@ -35,7 +35,22 @@
 	$user_in_RSO_row = $user_in_RSO_result->fetch();
 	$user_in_RSO = $user_in_RSO_row['user_joined'];
 
-	if($logged_in && $user_in_RSO==0){
+	$user_rso_university_query = '
+		SELECT COUNT(*) AS user_rso_university
+		FROM university_rso UR
+		WHERE UR.University_id = :user_university AND UR.RSO_id = :RSO_id
+	';
+	$university_id = $user['University_id'];
+	$user_rso_university_params = array(
+		':RSO_id' => $rso_id,
+		':user_university' => $university_id
+	);
+	$user_rso_university_result = $db->prepare($user_rso_university_query);
+	$user_rso_university_result->execute($user_rso_university_params);
+	$user_rso_university_row = $user_rso_university_result->fetch();
+	$user_rso_university = $user_rso_university_row['$user_rso_university'];
+	
+	if($logged_in && $user_in_RSO==0 && $user_rso_university==1){
 		$user_can_join = true;
 	}
 	
