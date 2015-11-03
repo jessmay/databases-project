@@ -111,7 +111,7 @@
 	}
 	
 	$event_name = $row['Name'];
-	$event_date_time = $row['Date_time'];
+	$event_date_time = date('F jS, Y (g a)', strtotime($row['Date_time']));
 	
 	$location_query = '
 		SELECT L.Name, L.Latitude, L.Longitude
@@ -390,7 +390,7 @@
 		$user_last_name = $user_row['Last_name'];
 		
 		$comment = $comment_rows['Message'];
-		$time = date('F jS, Y (g a)', strtotime($comment_rows['Date']));
+		$time = date('F jS, Y', strtotime($comment_rows['Date']));
 		echo "<div class='input-group'><h5><strong>$user_first_name $user_last_name:</strong>$comment</h5><h6>$time</h6><hr>";
 		
 		if($user_id == $comment_user_id){
