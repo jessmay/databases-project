@@ -158,6 +158,24 @@
 	<p>Email:	$event_email</p>
 	<hr>";
 	
+	$average_rating_query = '
+		SELECT AVG(R.Rating) AS average_rating
+		FROM rating R
+		WHERE R.Event_id = :event_id
+	';
+	$average_rating_param = array(':event_id' => $event_id);
+	$average_rating_result = $db->prepare($average_rating_query);
+	$average_rating_result->execute($average_rating_param);
+	$average_rating_row = $average_rating_result->fetch();
+	$average_rating = $average_rating_row['average_rating'];
+	$average_rating = number_format((float)$average_rating, 1, '.', '');
+	
+	if($average_rating != 0){
+		echo "<h4>Rating</h4>
+		<p>$average_rating</p>
+		<br>";
+	}
+	
 	function tryCreateRating($db, $current_user_id, $event_id, $rating){	
 		$valid_rating_params = array(
 			':user_id' => $current_user_id,
