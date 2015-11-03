@@ -234,6 +234,19 @@
 		return true;
 	}
 	
+	function deleteUserComment($db, $comment_id){
+		
+		$delete_comment_query = '
+			DELETE
+			FROM comment C
+			WHERE C.Comment_id = :comment_id
+		';
+		$delete_comment_param = array(':comment_id' => $comment_id);
+		$delete_comment_result = $db->prepare($delete_comment_query);
+		$delete_comment_result->execute($delete_comment_param);
+		
+	}
+	
 	function tryJoinEvent($db, $event_id, $user_id){
 
 		$join_event_params = array(
@@ -299,6 +312,12 @@
 				$_POST['rating']
 			);
 			$user_can_rate = false;
+		}
+		elseif(isset($_POST['deleteComment'])) {
+			$delete_comment_success = deleteUserComment(
+				$db,
+				$comment_id
+			);
 		}
 	}
 
@@ -371,7 +390,7 @@
 		$user_last_name = $user_row['Last_name'];
 		
 		$comment = $comment_rows['Message'];
-		$time = $comment_rows['Date'];
+		$time = date('F jS, Y (g a)', strtotime($comment_rows['Date']));
 		echo "<div class='input-group'><h5><strong>$user_first_name $user_last_name:</strong>$comment</h5><h6>$time</h6><hr>";
 		
 		if($user_id == $comment_user_id){
