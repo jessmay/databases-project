@@ -238,8 +238,8 @@
 		
 		$delete_comment_query = '
 			DELETE
-			FROM comment C
-			WHERE C.Comment_id = :comment_id
+			FROM `comment`
+			WHERE Comment_id = :comment_id
 		';
 		$delete_comment_param = array(':comment_id' => $comment_id);
 		$delete_comment_result = $db->prepare($delete_comment_query);
@@ -316,7 +316,7 @@
 		elseif(isset($_POST['deleteComment'])) {
 			$delete_comment_success = deleteUserComment(
 				$db,
-				$comment_id
+				$_POST['comment_id']
 			);
 		}
 	}
@@ -390,16 +390,24 @@
 		$user_last_name = $user_row['Last_name'];
 		
 		$comment = $comment_rows['Message'];
+		$comment_id = $comment_rows['Comment_id'];
 		$time = date('F jS, Y', strtotime($comment_rows['Date']));
 		echo "<div class='input-group'><h5><strong>$user_first_name $user_last_name:</strong>$comment</h5><h6>$time</h6><hr>";
 		
 		if($user_id == $comment_user_id){
-			echo "<span class='input-group-btn'>	
-				<button type='submit' name='editComment' class='btn btn-primary'>Edit</button>
-			</span>
-			<span class='input-group-btn'>	
-				<button type='submit' name='deleteComment' class='btn btn-primary'>Delete</button>
-			</span>";
+			echo "
+			<form role='form' action='' method='post'>
+				<div class='input-group'>
+					<input type='hidden' class='form-control' id='comment_id' name='comment_id' required value=$comment_id>
+					<span class='input-group-btn'>	
+						<button type='submit' name='editComment' class='btn btn-primary'>Edit</button>
+					</span>
+					<span class='input-group-btn'>	
+						<button type='submit' name='deleteComment' class='btn btn-primary'>Delete</button>
+					</span>
+				</div>
+			</form>
+			";
 		}
 		
 		echo "</div>";
@@ -409,7 +417,7 @@
 
 <?php if($user_can_rate): ?>
 	<p>
-		<form role="form" action"" method="post">
+		<form role="form" action="" method="post">
 			<div class="row">
 				<div class="form-group">
 					<label class="control-label" for="rating">How would you rate this event? (1-5 where 1 is worst and 5 is best)</label>
@@ -426,7 +434,7 @@
 <?php endif; ?>
 <?php if($user_can_comment): ?>
 	<p>
-		<form role="form" action"" method="post">
+		<form role="form" action="" method="post">
 			<div class="row">
 				<div class="form-group">
 					<label class="control-label" for="message">Add a comment</label>
