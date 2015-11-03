@@ -36,6 +36,7 @@
 	}
 	$user_can_join = false;
 	$user_can_comment = false;
+	$user_can_rate = false;
 	$join_event_success=false;
 	$create_comment_success=false;
 	$create_rating_success=false;
@@ -157,24 +158,6 @@
 	<p>Phone:	$event_phone</p>
 	<p>Email:	$event_email</p>
 	<hr>";
-	
-	$average_rating_query = '
-		SELECT AVG(R.Rating) AS average_rating
-		FROM rating R
-		WHERE R.Event_id = :event_id
-	';
-	$average_rating_param = array(':event_id' => $event_id);
-	$average_rating_result = $db->prepare($average_rating_query);
-	$average_rating_result->execute($average_rating_param);
-	$average_rating_row = $average_rating_result->fetch();
-	$average_rating = $average_rating_row['average_rating'];
-	$average_rating = number_format((float)$average_rating, 1, '.', '');
-	
-	if($average_rating != 0){
-		echo "<h4>Rating</h4>
-		<p>$average_rating</p>
-		<br>";
-	}
 	
 	function tryCreateRating($db, $current_user_id, $event_id, $rating){	
 		$valid_rating_params = array(
@@ -298,6 +281,7 @@
 			);
 			$user_can_join = false;
 			$user_can_comment = true;
+			$user_can_rate = true;
 		}
 		elseif(isset($_POST['createComment'])) {
             $create_comment_success = tryPostComment(
@@ -314,10 +298,51 @@
 				$event_id,
 				$_POST['rating']
 			);
+			$user_can_rate = false;
 		}
 	}
 
 	$rating = $rating ? htmlentities($_POST['rating']) : '';
+	
+		$average_rating_query = '
+		SELECT AVG(R.Rating) AS average_rating
+		FROM rating R
+		WHERE R.Event_id = :event_id
+	';
+	$average_rating_param = array(':event_id' => $event_id);
+	$average_rating_result = $db->prepare($average_rating_query);
+	$average_rating_result->execute($average_rating_param);
+	$average_rating_row = $average_rating_result->fetch();
+	$average_rating = $average_rating_row['average_rating'];
+	$average_rating = number_format((float)$average_rating, 1, '.', '');
+	
+	if($average_rating != 0){
+		echo "<h4>Rating</h4>
+		<p>Average: $average_rating</p>
+		";
+	}
+	
+	$user_rating_query = '
+		SELECT R.Rating
+		FROM rating R
+		WHERE R.Event_id = :event_id AND R.User_id = :user_id
+	';
+	$user_rating_params = array(
+		':user_id' => $user_id,
+		':event_id' => $event_id
+	);
+	$user_rating_result = $db->prepare($user_rating_query);
+	$user_rating_result->execute($user_rating_params);
+	$user_rating_row = $user_rating_result->fetch();
+	$user_rating = $user_rating_row['Rating'];
+	
+	if($user_rating != null){
+		echo "<p>Your Rating: $user_rating</p>
+		<br>";
+		$user_can_rate = false;
+	} else if($logged_in && $user_event_row['userParticipating'] == 1){
+		$user_can_rate = true;
+	}
 
 	$comment_query = '
 		SELECT *
@@ -363,7 +388,7 @@
     $message = $message ? htmlentities($_POST['message']) : '';
 ?>
 
-<?php if($user_can_comment): ?>
+<?php if($user_can_rate): ?>
 	<p>
 		<form role="form" action"" method="post">
 			<div class="row">
@@ -379,6 +404,8 @@
 			</div>
 		</form>
 	</p>
+<?php endif; ?>
+<?php if($user_can_comment): ?>
 	<p>
 		<form role="form" action"" method="post">
 			<div class="row">
