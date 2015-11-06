@@ -83,7 +83,7 @@
             $location_result->execute($university_name_params);
 
             $count = 0;
-            $answer = Array();
+            $answer = array();
 
             while($location_row = $location_result->fetch()){
                 $latitude =$location_row['Latitude'];
@@ -99,7 +99,7 @@
 
                 if($distance <= 16.0){
                     $count++;
-                    array_push($answer, Array
+                    array_push($answer, array
                                             (       
                                                 'Name' => $university_name,
                                                 'ID' => $ID,
