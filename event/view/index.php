@@ -41,6 +41,7 @@
 	$create_comment_success=false;
 	$create_rating_success=false;
 	$message="";
+	$updated_comment="";
 	$rating=null;
 	
 	// Check if the user has joined this event
@@ -247,6 +248,21 @@
 		
 	}
 	
+	function updateUserComment($db, $comment_id, $updated_comment){
+		$update_comment_query = '
+			UPDATE `comment`
+			SET Message = :updated_comment
+			WHERE Comment_id = :comment_id
+		';
+		$update_comment_params = array(
+			':comment_id' => $comment_id,
+			':updated_comment' => $updated_comment
+		);
+		
+		$update_comment_result = $db->prepare($update_comment_query);
+		$update_comment_result->execute($update_comment_params);
+	}
+	
 	function tryJoinEvent($db, $event_id, $user_id){
 
 		$join_event_params = array(
@@ -317,6 +333,13 @@
 			$delete_comment_success = deleteUserComment(
 				$db,
 				$_POST['comment_id']
+			);
+		}
+		elseif(isset($_POST['editComment'])){
+			$update_comment_success = updateUserComment(
+				$db,
+				$_POST['comment_id'],
+				$_POST['updated_comment']
 			);
 		}
 	}
@@ -392,15 +415,20 @@
 		$comment = $comment_rows['Message'];
 		$comment_id = $comment_rows['Comment_id'];
 		$time = date('F jS, Y', strtotime($comment_rows['Date']));
-		echo "<div class='input-group'><h5><strong>$user_first_name $user_last_name:</strong>$comment</h5><h6>$time</h6><hr>";
+		
+		$updated_comment = $updated_comment ? htmlentities($_POST['updated_comment']): '';
 		
 		if($user_id == $comment_user_id){
 			echo "
 			<form role='form' action='' method='post'>
 				<div class='input-group'>
+					<h5><strong>$user_first_name $user_last_name:</strong>
+						<input type='text' class='form-control' id='updated_comment' name='updated_comment' size='160' maxlength='160' placeholder='$comment' required value=$updated_comment>
+					</h5>
+					<h6>$time</h6>
 					<input type='hidden' class='form-control' id='comment_id' name='comment_id' required value=$comment_id>
 					<span class='input-group-btn'>	
-						<button type='submit' name='editComment' class='btn btn-primary'>Edit</button>
+						<button type='submit' name='editComment' class='btn btn-primary'>Update</button>
 					</span>
 					<span class='input-group-btn'>	
 						<button type='submit' name='deleteComment' class='btn btn-primary'>Delete</button>
@@ -409,8 +437,14 @@
 			</form>
 			";
 		}
-		
-		echo "</div>";
+		else {
+			echo "
+				<div class='input-group'>
+					<h5><strong>$user_first_name $user_last_name:</strong>$comment</h5>
+					<h6>$time</h6>
+				</div>
+			";
+		}
 	}
     $message = $message ? htmlentities($_POST['message']) : '';
 ?>
