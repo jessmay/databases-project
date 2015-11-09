@@ -422,7 +422,7 @@
 			echo "
 			<form role='form' action='' method='post'>
 				<div class='input-group'>
-					<h5><strong>$user_first_name $user_last_name:</strong>
+					<h5><strong>$user_first_name $user_last_name: </strong>
 						<input type='text' class='form-control' id='updated_comment' name='updated_comment' size='160' maxlength='160' required value='$updated_comment'>
 					</h5>
 					<h6>$time</h6>
@@ -440,7 +440,7 @@
 		else {
 			echo "
 				<div class='input-group'>
-					<h5><strong>$user_first_name $user_last_name:</strong>$comment</h5>
+					<h5><strong>$user_first_name $user_last_name: </strong>$comment</h5>
 					<h6>$time</h6>
 				</div>
 			";
