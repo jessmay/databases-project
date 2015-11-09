@@ -416,14 +416,14 @@
 		$comment_id = $comment_rows['Comment_id'];
 		$time = date('F jS, Y', strtotime($comment_rows['Date']));
 		
-		$updated_comment = $updated_comment ? htmlentities($_POST['updated_comment']): '';
+		$updated_comment = $updated_comment ? htmlentities($_POST['updated_comment']): $comment;
 		
 		if($user_id == $comment_user_id){
 			echo "
 			<form role='form' action='' method='post'>
 				<div class='input-group'>
 					<h5><strong>$user_first_name $user_last_name:</strong>
-						<input type='text' class='form-control' id='updated_comment' name='updated_comment' size='160' maxlength='160' placeholder='$comment' required value=$updated_comment>
+						<input type='text' class='form-control' id='updated_comment' name='updated_comment' size='160' maxlength='160' required value='$updated_comment'>
 					</h5>
 					<h6>$time</h6>
 					<input type='hidden' class='form-control' id='comment_id' name='comment_id' required value=$comment_id>
