@@ -48,7 +48,7 @@
 	$user_rso_university_result = $db->prepare($user_rso_university_query);
 	$user_rso_university_result->execute($user_rso_university_params);
 	$user_rso_university_row = $user_rso_university_result->fetch();
-	$user_rso_university = $user_rso_university_row['$user_rso_university'];
+	$user_rso_university = $user_rso_university_row['user_rso_university'];
 	
 	if($logged_in && $user_in_RSO==0 && $user_rso_university==1){
 		$user_can_join = true;

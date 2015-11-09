@@ -50,6 +50,14 @@
             return USER_HAS_UNIVERSITY;
         }
         
+        // Retrieve the latitude and longitude of the location
+        $location_name = $name . ' ' . $location;
+        $search_lookup = lookup($location_name);
+        
+        if ($search_lookup['latitude'] == 'failed') {
+            return INVALID_LOCATION;
+        }
+        
         // Insert the university information into the University table
         $create_university_params = array(
             ':super_admin_id' => $super_admin_id,
@@ -92,14 +100,6 @@
         $result = $db
             ->prepare($update_user_university_query)
             ->execute($update_user_university_params);
-        
-        // Retrieve the latitude and longitude of the location
-        $location_name = $name . ' ' . $location;
-        $search_lookup = lookup($location_name);
-        
-        if ($search_lookup['latitude'] == 'failed') {
-            return INVALID_LOCATION;
-        }
         
         // Insert the location into the Location table
         $create_location_params = array(
