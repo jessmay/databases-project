@@ -62,7 +62,7 @@
     define('RSO_EVENT', 2);
     define('PUBLIC_EVENT', 3);
     
-    function tryCreateEvent($db, $name, $category_id, $description, $location, $room_number, $address, $event_date, $event_time, $event_type, $contact_email, $contact_phone, $rso_id) {
+    function tryCreateEvent($db, $is_type_super_admin, $name, $category_id, $description, $location, $room_number, $address, $event_date, $event_time, $event_type, $contact_email, $contact_phone, $rso_id) {
         $admin_id = $_SESSION['user']['User_id'];   // Only Admins or Super-Admins can see the form
         
         // If the event is an RSO event, then approval from the super-admin isn't needed
@@ -272,6 +272,7 @@
         if (isset($_POST['createEvent'])) {
             $status = tryCreateEvent(
                 $db,
+                $is_type_super_admin,
                 $_POST['name'],
                 $_POST['category_id'],
                 $_POST['description'],
