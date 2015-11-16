@@ -89,6 +89,12 @@ CREATE TABLE IF NOT EXISTS Category (
     PRIMARY KEY (Category_id)
 );
 
+INSERT INTO Category VALUES(1, 'Social');
+INSERT INTO Category VALUES(2, 'Fundraiser');
+INSERT INTO Category VALUES(3, 'Tech Talk');
+INSERT INTO Category VALUES(4, 'Academic');
+INSERT INTO Category VALUES(5, 'Concert');
+
 CREATE TABLE IF NOT EXISTS Location (
     Location_id INTEGER NOT NULL AUTO_INCREMENT,
     Name        CHAR(200),
