@@ -29,7 +29,7 @@ function lookup($string){
     $p_code = ' ';
 
     $string = str_replace (" ", "+", urlencode($string));
-    $details_url = "http://maps.googleapis.com/maps/api/geocode/json?address=".$string."&sensor=false";
+    $details_url = "http://maps.googleapis.com/maps/api/geocode/json?address=".$string."&components=country:US&sensor=false";
 
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $details_url);

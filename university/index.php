@@ -25,7 +25,7 @@
 <?php
      // TESTING NOTE: To see function results, change "$see_output" value to True
 
-    $see_output = false;
+    $see_output = False;
 
     if(isset($_POST['search']) && trim($_POST['search']) != '' ){
         
@@ -35,7 +35,7 @@
 
         //We use google's geocode api to take in the place of interest
         //and see if we can return a valid result back from it.
-        $search_lookup = lookup($search_string.", USA");
+        $search_lookup = lookup($search_string);
 
         if($see_output){
             print_r($search_lookup);

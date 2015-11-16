@@ -33,7 +33,7 @@
             $Name = '%'.$search.'%';
             $search_string = htmlentities($search);
 
-            $search_lookup = lookup($search_string.", USA");
+            $search_lookup = lookup($search_string);
 
             if($see_output){
                 print_r($search_lookup);
@@ -138,6 +138,95 @@
             $public_count = $result_public_event_name->rowCount();
             //**END PUBLIC EVENT NAME SEARCH
 
+            $private_answer = array();
+            $public_answer = array();
+      
+                           
+            $user_private_Event_name = array();
+            while ($private_event_row2 = $result_private_event_name->fetch()){
+
+                array_push($user_private_Event_name, array(
+                                                    'Name' => $private_event_row2['Name'],
+                                                    'ID' => $private_event_row2['Event_id'],
+                                                    'University_id' => $private_event_row2['University_id']
+                                                    )
+                        );
+                
+
+            }
+
+            
+            for($i = 0, $size2 = count($user_private_Event_name); $i < $size2; $i++){
+                $answer_name = $user_private_Event_name[$i]['Name'];
+                $answer_id = $user_private_Event_name[$i]['ID'];
+
+                $university = $user_private_Event_name[$i]['University_id'];
+
+                $university_id_params = array(':id' => $university);
+
+                $university_name_query = "SELECT U.Name
+                FROM university U
+                WHERE U.University_id = :id";
+                
+                $result_name = $db->prepare($university_name_query);
+                $result_name->execute($university_id_params);
+                $result_name_array = $result_name->fetch();
+                $university_name = $result_name_array['Name'];
+   
+                array_push($private_answer, array
+                                        (       
+                                            'Name' => $answer_name,
+                                            'ID' => $answer_id,
+                                            'University' => $university_name
+                                 
+                                        ));
+                    
+                
+            }
+                
+
+            $user_public_Event_name_array = array();
+            while ($public_event_row2 = $result_public_event_name->fetch()){
+                array_push($user_public_Event_name_array, array(
+                                                    'Name' => $public_event_row2['Name'],
+                                                    'ID' => $public_event_row2['Event_id'],
+                                                    'University' => $public_event_row2['University_id']
+                                                    )
+                        );
+
+            }
+            
+            for($i = 0, $size3 = count($user_public_Event_name_array); $i < $size3; $i++){
+                
+                $answer_name = $user_public_Event_name_array[$i]['Name'];
+                $answer_id = $user_public_Event_name_array[$i]['ID'];
+
+                $university = $user_public_Event_name_array[$i]['University'];
+
+                $university_id_params = array(':id' => $university);
+
+                $university_name_query = "SELECT U.Name
+                FROM university U
+                WHERE U.University_id = :id";
+
+                
+                $result_name = $db->prepare($university_name_query);
+                $result_name->execute($university_id_params);
+                $result_name_array = $result_name->fetch();
+                $university_name = $result_name_array['Name'];
+                    
+                array_push($public_answer, array
+                                        (       
+                                            'Name' => $answer_name,
+                                            'ID' => $answer_id,
+                                            'University' => $university_name
+                                 
+                                        ));                    
+                
+            }
+
+            $private_count = count($private_answer);
+            $public_count = count($public_answer);
 
             if($see_output){
                 print_r("<br>");
@@ -168,44 +257,47 @@
                 //Outputting all the resulting events that were returned
                 echo '<div style="margin-left: 3em;">';
                  for($i = 0, $size = count($user_rsos_Event_name); $i < $size; $i++){
+
                     $answer_id = $user_rsos_Event_name[$i]['ID'];
                     $answer_name = $user_rsos_Event_name[$i]['Name'];
                     $answer_rso_name = $user_rsos_Event_name[$i]['RSO'];
-                    echo "<a href='/event/view?id=$answer_id'><h3><strong>$answer_name</strong></a></h3>Hosted by $answer_rso_name<hr>";
+                    if($answer_id == NULL)
+                        continue;
+                    else{
+                        echo "<a href='/event/view?id=$answer_id'><h3><strong>$answer_name</strong></a></h3>Hosted by $answer_rso_name<hr>";
+                    }
+                    
                 }
 
                 echo "</div>";  
             }
-            
-            if($private_count > 0){
-                echo "<h4><strong>Private Events </strong></h4><hr>";
-                echo '<div style="margin-left: 3em;">';
-                while ($private_event_row = $result_private_event_name->fetch()){
-                    $answer_name = $private_event_row['Name'];
-                    $answer_id = $private_event_row['Event_id'];
 
-                    echo "<a href='/event/view?id=$answer_id'><h3><strong>$answer_name</strong></h3></a><hr/>";
-
+            if(count($private_answer) > 0){
+                    echo "<h4><strong>Private Events </strong></h4><hr>";
+                    echo '<div style="margin-left: 3em;">';
+                    for($i = 0, $size2 = count($private_answer); $i < $size2; $i++){
+                        $answer_id = $private_answer[$i]['ID'];
+                        $answer_name = $private_answer[$i]['Name'];
+                        $answer_university_name = $private_answer[$i]['University'];
+                        echo "<a href='/event/view?id=$answer_id'><h3><strong>$answer_name</strong></a></h3>Hosted by $answer_university_name<hr>";
+                    }
+                    echo "</div>";
                 }
-                echo "</div>";
-            }
-            
-            if($public_count > 0){
-                echo "<h4><strong>Public Events </strong></h4><hr>";
-                echo '<div style="margin-left: 3em;">';
-                while ($public_event_row = $result_public_event_name->fetch()){
-                    $Name2 = $public_event_row['Name'];
-                    $ID2 = $public_event_row['Event_id'];
-
-                    echo "<a href='/event/view?id=$ID2'><h3><strong>$Name2</strong></h3></a><hr/>";
-
+                
+                if(count($public_answer) > 0){
+                    echo "<h4><strong>Public Events </strong></h4><hr>";
+                    echo '<div style="margin-left: 3em;">';
+                    for($i = 0, $size3 = count($public_answer); $i < $size3; $i++){
+                        $answer_id = $public_answer[$i]['ID'];
+                        $answer_name = $public_answer[$i]['Name'];
+                        $answer_university_name = $public_answer[$i]['University'];
+                        echo "<a href='/event/view?id=$answer_id'><h3><strong>$answer_name</strong></a></h3>Hosted by $answer_university_name<hr>";
+                    }
+                    echo "</div>";
                 }
-                echo "</div>";
-            }
             
             echo "<br><hr style='border: 1px solid #000;' />";
-
-            
+        
             //The following is for showing events by location
 
             if ($search_lookup['latitude'] == 'failed') {
@@ -307,7 +399,8 @@
                                                     'Name' => $answer_name,
                                                     'ID' => $answer_id,
                                                     'Distance' => $distance,
-                                                    'RSO' => $rso
+                                                    'RSO' => $rso,
+                                                    
                                          
                                                 ));
                         if($see_output){
@@ -327,7 +420,8 @@
                                                         'Name' => $private_event_row2['Name'],
                                                         'ID' => $private_event_row2['Event_id'],
                                                         'Latitude' => $private_event_row2['Latitude'],
-                                                        'Longitude' => $private_event_row2['Longitude']
+                                                        'Longitude' => $private_event_row2['Longitude'],
+                                                        'University_id' => $private_event_row2['University_id']
                                                         )
                             );
                     
@@ -342,6 +436,18 @@
 
                     $latitude = $user_private_Event_location[$i]['Latitude'];
                     $longitude = $user_private_Event_location[$i]['Longitude'];
+                    $university = $user_private_Event_location[$i]['University_id'];
+
+                    $university_id_params = array(':id' => $university);
+
+                    $university_name_query = "SELECT U.Name
+                    FROM university U
+                    WHERE U.University_id = :id";
+                    
+                    $result_name = $db->prepare($university_name_query);
+                    $result_name->execute($university_id_params);
+                    $result_name_array = $result_name->fetch();
+                    $university_name = $result_name_array['Name'];
 
                     $distance = distanceCalc($search_lookup['latitude'],$search_lookup['longitude'],$latitude,$longitude);
 
@@ -351,7 +457,8 @@
                                                 (       
                                                     'Name' => $answer_name,
                                                     'ID' => $answer_id,
-                                                    'Distance' => $distance
+                                                    'Distance' => $distance,
+                                                    'University' => $university_name
                                          
                                                 ));
                         if($see_output){
@@ -371,7 +478,8 @@
                                                         'Name' => $public_event_row2['Name'],
                                                         'ID' => $public_event_row2['Event_id'],
                                                         'Latitude' => $public_event_row2['Latitude'],
-                                                        'Longitude' => $public_event_row2['Longitude']
+                                                        'Longitude' => $public_event_row2['Longitude'],
+                                                        'University' => $public_event_row2['University_id']
                                                         )
                             );
 
@@ -385,6 +493,20 @@
                     $latitude = $user_public_Event_location_array[$i]['Latitude'];
                     $longitude = $user_public_Event_location_array[$i]['Longitude'];
 
+                    $university = $user_public_Event_location_array[$i]['University'];
+
+                    $university_id_params = array(':id' => $university);
+
+                    $university_name_query = "SELECT U.Name
+                    FROM university U
+                    WHERE U.University_id = :id";
+
+                    
+                    $result_name = $db->prepare($university_name_query);
+                    $result_name->execute($university_id_params);
+                    $result_name_array = $result_name->fetch();
+                    $university_name = $result_name_array['Name'];
+
                     $distance = distanceCalc($search_lookup['latitude'],$search_lookup['longitude'],$latitude,$longitude);
 
                     if($distance <= 16.0){
@@ -393,7 +515,8 @@
                                                 (       
                                                     'Name' => $answer_name,
                                                     'ID' => $answer_id,
-                                                    'Distance' => $distance
+                                                    'Distance' => $distance,
+                                                    'University' => $university_name
                                          
                                                 ));
                         if($see_output){
@@ -481,7 +604,8 @@
                     for($i = 0, $size2 = count($private_answer); $i < $size2; $i++){
                         $answer_id = $private_answer[$i]['ID'];
                         $answer_name = $private_answer[$i]['Name'];
-                        echo "<a href='/event/view?id=$answer_id'><h3><strong>$answer_name</strong></h3><hr></a>";
+                        $answer_university_name = $private_answer[$i]['University'];
+                        echo "<a href='/event/view?id=$answer_id'><h3><strong>$answer_name</strong></a></h3>Hosted by $answer_university_name<hr>";
                     }
                     echo "</div>";
                 }
@@ -492,7 +616,8 @@
                     for($i = 0, $size3 = count($public_answer); $i < $size3; $i++){
                         $answer_id = $public_answer[$i]['ID'];
                         $answer_name = $public_answer[$i]['Name'];
-                        echo "<a href='/event/view?id=$answer_id'><h3><strong>$answer_name</strong></h3><hr></a>";
+                        $answer_university_name = $public_answer[$i]['University'];
+                        echo "<a href='/event/view?id=$answer_id'><h3><strong>$answer_name</strong></a></h3>Hosted by $answer_university_name<hr>";
                     }
                     echo "</div>";
                 }
