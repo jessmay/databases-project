@@ -37,6 +37,18 @@ if ($logged_in) {
     $result = $db->prepare($permissions_query);
     $result->execute($permissions_params);
     $session_user_type = $result->fetch()['Type'];
+    
+    $user_info_query = '
+        SELECT U.User_id, U.First_name, U.Password_hash, U.Type, U.University_id
+        FROM User U
+        WHERE U.User_id = :user_id
+    ';
+    
+    $user_info_params = array(':user_id' => $session_user_id);
+    $result = $db->prepare($user_info_query);
+    $result->execute($user_info_params);
+    $row = $result->fetch();
+    $_SESSION['user'] = $row;
 }
 $is_type_regular = $logged_in ? $session_user_type == 1 : true;
 $is_type_admin = $logged_in ? $session_user_type == 2 : false;
