@@ -131,7 +131,7 @@ UNLOCK TABLES;
 
 LOCK TABLES `university_event` WRITE;
 /*!40000 ALTER TABLE `university_event` DISABLE KEYS */;
-INSERT INTO `university_event` VALUES (2,1),(2,2),(2,3),(2,4),(2,5),(1,6),(3,7),(3,8),(3,9),(3,10);
+INSERT INTO `university_event` VALUES (2,1),(2,2),(2,3),(2,4),(2,5),(3,6),(3,7),(3,8),(3,9),(3,10);
 /*!40000 ALTER TABLE `university_event` ENABLE KEYS */;
 UNLOCK TABLES;
 
